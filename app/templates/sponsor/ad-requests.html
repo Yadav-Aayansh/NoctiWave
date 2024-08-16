@@ -1,0 +1,859 @@
+{% extends 'sponsor/dashboard_base.html' %}
+
+{% block title %} Ad Requests {% endblock %}
+{% block nav_title %} Ad Requests {% endblock %}
+
+{% block content %}
+<div class="main">
+    <div class="container mt-2">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+        {% set ad_requests = ad_requests | selectattr('flagged', 'equalto', 'False') | list %}
+        <div class="card">
+            <ul class="nav nav-pills nav-fill mt-3" id="myTab" role="tablist">
+                <li class="nav-item short-tab" role="presentation">
+                    <button class="nav-link active" id="approved-tab" data-bs-toggle="pill" data-bs-target="#approved"
+                        type="button" role="tab" aria-controls="approved" aria-selected="true">Approved Ad
+                        Requests</button>
+                </li>
+                <li class="nav-item short-tab" role="presentation">
+                    <button class="nav-link" id="pending-tab" data-bs-toggle="pill" data-bs-target="#pending"
+                        type="button" role="tab" aria-controls="pending" aria-selected="false">Pending Ad
+                        Requests</button>
+                </li>
+                <li class="nav-item short-tab" role="presentation">
+                    <button class="nav-link" id="rejected-tab" data-bs-toggle="pill" data-bs-target="#rejected"
+                        type="button" role="tab" aria-controls="rejected" aria-selected="false">Rejected Ad
+                        Requests</button>
+                </li>
+                <li class="nav-item short-tab" role="presentation">
+                    <button class="nav-link" id="negotiation-tab" data-bs-toggle="pill" data-bs-target="#negotiation"
+                        type="button" role="tab" aria-controls="negotiation" aria-selected="false">Negotiations</button>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <!-- Approved Ad Requests Tab -->
+                <div class="tab-pane fade show active" id="approved" role="tabpanel" aria-labelledby="approved-tab">
+                    {% set approved_request = ad_requests | selectattr('status', 'equalto', 'Approved') | first %}
+                    {% if not approved_request %}
+                    <div class="d-flex flex-column align-items-center p-4 bg-white shadow-sm rounded">
+                        <img src="{{ url_for('static', filename='/img/empty.png') }}" alt="NoctiWave" height="150px">
+                        <div class="text-secondary font-weight-bold mb-3 fs-5">
+                            No Approved Ad Request Found
+                        </div>
+                        <div>
+                            <!-- Button to Open Create Ad Request Modal -->
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#createAdRequestModal">
+                                <i class="fa fa-plus me-2"></i> Create New Ad Request
+                            </button>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="card mt-4">
+                        <div class="card-header" style="height: 45px;">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    Approved Ad Requests
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <!-- Button to Open Create Ad Request Modal -->
+                                    <button type="button" class="btn btn-outline-info btn-sm"
+                                        style="height: 30px; width: 250px;" data-bs-toggle="modal"
+                                        data-bs-target="#createAdRequestModal">
+                                        <i class="fa fa-plus"></i> Create New Ad Request
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered table-hover" id="campaignsTable">
+                                    <thead class="table-success">
+                                        <tr>
+                                            <th scope="col" class="text-center">Ad ID</th>
+                                            <th scope="col" class="text-center">Campaign Name</th>
+                                            <th scope="col" class="text-center">Influencer Name</th>
+                                            <th scope="col" class="text-center">Requirements</th>
+                                            <th scope="col" class="text-center">Initiator</th>
+                                            <th scope="col" class="text-center">Payment Amount</th>
+                                            <th scope="col" class="text-center" style="width: 13%;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for ad_request in ad_requests %}
+                                        {% if ad_request.status == 'Approved' %}
+                                        <tr>
+                                            <td class="text-center">{{ ad_request.ad_request_id }}</td>
+                                            <td class="text-center">{{ id_to_campaign(ad_request.campaign_id) }}</td>
+                                            <td class="text-center">{{ id_to_influencer(ad_request.influencer_id) }}
+                                            </td>
+                                            <td class="text-center">{{ ad_request.requirements }}</td>
+                                            <td class="text-center text-capitalize">{{ ad_request.initiator }}</td>
+                                            <td class="text-center">₹{{ '{:,.2f}'.format(ad_request.payment_amount) }}
+                                            </td>
+                                            <td class="text-center"> <button class="btn btn-success btn-sm"><i
+                                                        class="fas fa-check"></i> {{ ad_request.status }} </button>
+                                            </td>
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Pending Ad Requests Tab -->
+                <div class="tab-pane fade" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+                    {% set pending_request = ad_requests | selectattr('status', 'equalto', 'Pending') | first %}
+                    {% if not pending_request %}
+                    <div class="d-flex flex-column align-items-center p-4 bg-white shadow-sm rounded">
+                        <img src="{{ url_for('static', filename='/img/empty.png') }}" alt="NoctiWave" height="150px">
+                        <div class="text-secondary font-weight-bold mb-3 fs-5">
+                            No Pending Ad Request Found
+                        </div>
+                        <div>
+                            <!-- Button to Open Create Ad Request Modal -->
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#createAdRequestModal">
+                                <i class="fa fa-plus me-2"></i> Create New Ad Request
+                            </button>
+                        </div>
+                    </div>
+                    {% else %}
+                    {% set my_created = ad_requests | selectattr('status', 'equalto', 'Pending') |
+                    selectattr('initiator', 'equalto', 'sponsor') | first %}
+                    {% set incoming = ad_requests | selectattr('status', 'equalto', 'Pending') | selectattr('initiator',
+                    'equalto', 'influencer') | first %}
+                    {% if my_created %}
+                    <div class="card mt-4">
+                        <div class="card-header" style="height: 45px;">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    My Created Ad Requests
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <!-- Button to Open Create Ad Request Modal -->
+                                    <button type="button" class="btn btn-outline-info btn-sm"
+                                        style="height: 30px; width: 250px;" data-bs-toggle="modal"
+                                        data-bs-target="#createAdRequestModal">
+                                        <i class="fa fa-plus"></i> Create New Ad Request
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered table-hover" id="campaignsTable">
+                                    <thead class="table-success">
+                                        <tr>
+                                            <th scope="col" class="text-center">Ad ID</th>
+                                            <th scope="col" class="text-center">Campaign Name</th>
+                                            <th scope="col" class="text-center">Influencer Name</th>
+                                            <th scope="col" class="text-center">Requirements</th>
+                                            <th scope="col" class="text-center">Payment Amount</th>
+                                            <th scope="col" class="text-center" style="width: 22%;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for ad_request in ad_requests %}
+                                        {% if ad_request.status == 'Pending' and ad_request.initiator == 'sponsor'%}
+                                        <tr>
+                                            <td class="text-center">{{ ad_request.ad_request_id }}</td>
+                                            <td class="text-center">{{ id_to_campaign(ad_request.campaign_id) }}</td>
+                                            <td class="text-center">{{ id_to_influencer(ad_request.influencer_id) }}
+                                            </td>
+                                            <td class="text-center">{{ ad_request.requirements }}</td>
+                                            <td class="text-center">₹{{ '{:,.2f}'.format(ad_request.payment_amount) }}
+                                            </td>
+                                            <td class="text-center">
+                                                <button class="btn btn-sm" style="background-color: #00ffff;"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#viewAdRequestModal-{{ ad_request.ad_request_id }}">
+                                                    <i class="fas fa-eye"></i> View </button>
+                                                <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                                                    data-bs-target="#updateAdRequestModal-{{ ad_request.ad_request_id }}">
+                                                    <i class="fas fa-edit"></i> Edit </button>
+                                                <form id="deleteAdRequestForm-{{ ad_request.ad_request_id }}"
+                                                    method="POST" style="display: inline-block;">
+                                                    <input type="hidden" name="_method" value="DELETE">
+                                                    <input type="hidden" name="ad_request_id"
+                                                        value="{{ ad_request.ad_request_id }}">
+                                                    <button type="button"
+                                                        class="btn btn-danger btn-sm deleteAdRequestLink"
+                                                        data-ad-request-id="{{ ad_request.ad_request_id }}"> <i
+                                                            class="fas fa-trash"></i> Delete</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if incoming %}
+                    <div class="card mt-4">
+                        <div class="card-header" style="height: 45px;">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    Influencer Ad Requests
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <!-- Button to Open Create Ad Request Modal -->
+                                    <button type="button" class="btn btn-outline-info btn-sm"
+                                        style="height: 30px; width: 250px;" data-bs-toggle="modal"
+                                        data-bs-target="#createAdRequestModal">
+                                        <i class="fa fa-plus"></i> Create New Ad Request
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered table-hover" id="campaignsTable">
+                                    <thead class="table-success">
+                                        <tr>
+                                            <th scope="col" class="text-center">Ad ID</th>
+                                            <th scope="col" class="text-center">Campaign Name</th>
+                                            <th scope="col" class="text-center">Influencer Name</th>
+                                            <th scope="col" class="text-center">Requirements</th>
+                                            <th scope="col" class="text-center">Payment Amount</th>
+                                            <th scope="col" class="text-center" style="width: 35%;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for ad_request in ad_requests %}
+                                        {% if ad_request.status == 'Pending' and ad_request.initiator == 'influencer'%}
+                                        <tr>
+                                            <td class="text-center">{{ ad_request.ad_request_id }}</td>
+                                            <td class="text-center">{{ id_to_campaign(ad_request.campaign_id) }}</td>
+                                            <td class="text-center">{{ id_to_influencer(ad_request.influencer_id) }}
+                                            </td>
+                                            <td class="text-center">{{ ad_request.requirements }}</td>
+                                            <td class="text-center">₹{{ '{:,.2f}'.format(ad_request.payment_amount) }}
+                                            </td>
+                                            <td class="text-center">
+                                                <button class="btn btn-sm" style="background-color: #00ffff;"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#viewAdRequestModal-{{ ad_request.ad_request_id }}">
+                                                    <i class="fas fa-eye"></i> View </button>
+                                                <button type="button" class="btn btn-sm btn-warning"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#createNegotiationModal-{{ ad_request.ad_request_id }}">
+                                                    <i class="fas fa-handshake"></i> Negotiate
+                                                </button>
+                                                <form id="acceptAdRequestForm-{{ ad_request.ad_request_id }}"
+                                                    method="POST" style="display: inline-block;">
+                                                    <input type="hidden" name="_method" value="ACCEPT">
+                                                    <input type="hidden" name="ad_request_id"
+                                                        value="{{ ad_request.ad_request_id }}">
+                                                    <button type="submit"
+                                                        class="btn btn-success btn-sm acceptAdRequestLink"
+                                                        data-ad-request-id="{{ ad_request.ad_request_id }}">
+                                                        <i class="fas fa-check"></i> Accept
+                                                    </button>
+                                                </form>
+                                                <form id="rejectAdRequestForm-{{ ad_request.ad_request_id }}"
+                                                    method="POST" style="display: inline-block;">
+                                                    <input type="hidden" name="_method" value="REJECT">
+                                                    <input type="hidden" name="ad_request_id"
+                                                        value="{{ ad_request.ad_request_id }}">
+                                                    <button type="submit"
+                                                        class="btn btn-danger btn-sm rejectAdRequestLink"
+                                                        data-ad-request-id="{{ ad_request.ad_request_id }}">
+                                                        <i class="fas fa-times"></i> Reject
+                                                    </button>
+                                                </form>
+                                            </td>
+                                            <!-- Create Negotiation Modal -->
+                                            <div class="modal fade"
+                                                id="createNegotiationModal-{{ ad_request.ad_request_id }}" tabindex="-1"
+                                                aria-labelledby="createNegotiationModalLabel" aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="createNegotiationModalLabel">
+                                                                Negotiation </h5>
+                                                            <button type="button" class="btn-close"
+                                                                data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <form id="createNegotiationForm" method="POST">
+                                                                <input type="hidden" name="_method" value="NEGOTIATE">
+                                                                <input type="hidden" name="ad_request_id"
+                                                                    value="{{ ad_request.ad_request_id }}">
+                                                                <input type="hidden" name="initiator" value="sponsor">
+                                                                <input type="hidden" name="status" value="Open">
+                                                                <div class="mb-3">
+                                                                    <label for="message" class="form-label"> Message
+                                                                    </label>
+                                                                    <textarea class="form-control" id="message"
+                                                                        name="message" rows="3" required></textarea>
+                                                                </div>
+                                                                <button type="submit" class="btn btn-success">Send
+                                                                    Message</button>
+                                                                <button type="button" class="btn btn-secondary ms-2"
+                                                                    data-bs-dismiss="modal">Cancel</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                </div>
+
+
+                <!-- Rejected Ad Requests Tab -->
+                <div class="tab-pane fade" id="rejected" role="tabpanel" aria-labelledby="rejected-tab">
+                    {% set rejected_request = ad_requests | selectattr('status', 'equalto', 'Rejected') | first %}
+                    {% if not rejected_request %}
+                    <div class="d-flex flex-column align-items-center p-4 bg-white shadow-sm rounded">
+                        <img src="{{ url_for('static', filename='/img/empty.png') }}" alt="NoctiWave" height="150px">
+                        <div class="text-secondary font-weight-bold mb-3 fs-5">
+                            No Rejected Ad Request Found
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            Rejected Ad Requests
+                        </div>
+                        <div class="card-body">
+
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered table-hover" id="campaignsTable">
+                                    <thead class="table-success">
+                                        <tr>
+                                            <th scope="col" class="text-center">Ad ID</th>
+                                            <th scope="col" class="text-center">Campaign Name</th>
+                                            <th scope="col" class="text-center">Influencer Name</th>
+                                            <th scope="col" class="text-center">Requirements</th>
+                                            <th scope="col" class="text-center">Initiator</th>
+                                            <th scope="col" class="text-center">Payment Amount</th>
+                                            <th scope="col" class="text-center" style="width: 13%;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for ad_request in ad_requests %}
+                                        {% if ad_request.status == 'Rejected' %}
+                                        <tr>
+                                            <td class="text-center">{{ ad_request.ad_request_id }}</td>
+                                            <td class="text-center">{{ id_to_campaign(ad_request.campaign_id) }}</td>
+                                            <td class="text-center">{{ id_to_influencer(ad_request.influencer_id) }}
+                                            </td>
+                                            <td class="text-center">{{ ad_request.requirements }}</td>
+                                            <td class="text-center text-capitalize">{{ ad_request.initiator }}</td>
+                                            <td class="text-center">₹{{ '{:,.2f}'.format(ad_request.payment_amount) }}
+                                            </td>
+                                            <td class="text-center"> <button class="btn btn-danger btn-sm"><i
+                                                        class="fas fa-times"></i> {{ ad_request.status }} </button>
+                                            </td>
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Negotiation Tab -->
+                <div class="tab-pane fade" id="negotiation" role="tabpanel" aria-labelledby="negotiation-tab">
+                    {% set negotiation_avail = negotiations | selectattr('status', 'equalto', 'Open') | first %}
+                    {% if not negotiation_avail %}
+                    <div class="d-flex flex-column align-items-center p-4 bg-white shadow-sm rounded">
+                        <img src="{{ url_for('static', filename='/img/empty.png') }}" alt="NoctiWave" height="150px">
+                        <div class="text-secondary font-weight-bold mb-3 fs-5">
+                            No Negotiations Found
+                        </div>
+                    </div>
+                    {% else %}
+                    {% set my_created_nego = negotiations | selectattr('status', 'equalto', 'Open') |
+                    selectattr('initiator', 'equalto', 'sponsor') | first %}
+                    {% set incoming_nego = negotiations | selectattr('status', 'equalto', 'Open') |
+                    selectattr('initiator', 'equalto', 'influencer') | first %}
+                    {% if my_created_nego %}
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            My Negotiation
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered table-hover" id="campaignsTable">
+                                    <thead class="table-success">
+                                        <tr>
+                                            <th scope="col" class="text-center">Ad ID</th>
+                                            <th scope="col" class="text-center">Campaign Name</th>
+                                            <th scope="col" class="text-center">Influencer Name</th>
+                                            <th scope="col" class="text-center">Negotiation</th>
+                                            <th scope="col" class="text-center" style="width: 22%;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for negotiation in negotiations %}
+                                        {% if negotiation.initiator == 'sponsor' %}
+                                        <tr>
+                                            <td class="text-center">{{ negotiation.ad_request_id }}</td>
+                                            <td class="text-center">{{ negotiation.ad_request.campaign.name }}</td>
+                                            <td class="text-center">{{ negotiation.ad_request.influencer.user.name }}
+                                            </td>
+                                            <td class="text-center">{{ negotiation.message }}</td>
+                                            <td class="text-center">
+                                                <button class="btn btn-sm" style="background-color: #00ffff;"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#viewNegotiationModal-{{ negotiation.negotiation_id }}">
+                                                    <i class="fas fa-eye"></i> View
+                                                </button>
+                                                <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                                                    data-bs-target="#editNegotiationModal-{{ negotiation.negotiation_id }}">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </button>
+                                                <form id="deleteNegotiationForm-{{ negotiation.negotiation_id }}"
+                                                    method="POST" style="display: inline-block;">
+                                                    <input type="hidden" name="_method" value="DELETE">
+                                                    <input type="hidden" name="negotiation_id"
+                                                        value="{{ negotiation.negotiation_id }}">
+                                                    <button type="button"
+                                                        class="btn btn-danger btn-sm deleteNegotiationLink"
+                                                        data-negotiation-id="{{ negotiation.negotiation_id }}">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if incoming_nego %}
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            Influencer Negotiation
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered table-hover" id="campaignsTable">
+                                    <thead class="table-success">
+                                        <tr>
+                                            <th scope="col" class="text-center">Ad ID</th>
+                                            <th scope="col" class="text-center">Campaign Name</th>
+                                            <th scope="col" class="text-center">Influencer Name</th>
+                                            <th scope="col" class="text-center">Negotiation</th>
+                                            <th scope="col" class="text-center" style="width: 35%;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for negotiation in negotiations %}
+                                        {% if negotiation.initiator == 'influencer' %}
+                                        <tr>
+                                            <td class="text-center">{{ negotiation.ad_request_id }}</td>
+                                            <td class="text-center">{{ negotiation.ad_request.campaign.name }}</td>
+                                            <td class="text-center">{{ negotiation.ad_request.influencer.user.name }}
+                                            </td>
+                                            <td class="text-center">{{ negotiation.message }}</td>
+                                            <td class="text-center">
+                                                <button class="btn btn-sm" style="background-color: #00ffff;"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#viewNegotiationModal-{{ negotiation.negotiation_id }}">
+                                                    <i class="fas fa-eye"></i> View
+                                                </button>
+                                                <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                                                    data-bs-target="#editNegotiationBackModal-{{ negotiation.negotiation_id }}">
+                                                    <i class="fas fa-handshake"></i> Negotiate Back
+                                                </button>
+                                                <form id="deleteNegotiationForm-{{ negotiation.negotiation_id }}"
+                                                    method="POST" style="display: inline-block;">
+                                                    <input type="hidden" name="_method" value="DELETE">
+                                                    <input type="hidden" name="negotiation_id"
+                                                        value="{{ negotiation.negotiation_id }}">
+                                                    <button type="button"
+                                                        class="btn btn-danger btn-sm deleteNegotiationLink"
+                                                        data-negotiation-id="{{ negotiation.negotiation_id }}">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- View Ad Request Modals -->
+            {% for ad_request in ad_requests %}
+            <div class="modal fade" id="viewAdRequestModal-{{ ad_request.ad_request_id }}" tabindex="-1"
+                aria-labelledby="viewAdRequestModalLabel-{{ ad_request.ad_request_id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="viewAdRequestModalLabel-{{ ad_request.ad_request_id }}">Ad
+                                Request Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p><strong>Campaign Name:</strong> {{ id_to_campaign(ad_request.campaign_id) }}</p>
+                            <p><strong>Influencer Name:</strong> {{ id_to_influencer(ad_request.influencer_id) }}</p>
+                            <p><strong>Requirements:</strong> {{ ad_request.requirements }}</p>
+                            <p><strong>Payment Amount:</strong> ₹{{ '{:,.2f}'.format(ad_request.payment_amount) }}</p>
+                            <p><strong>Messages:</strong> {{ ad_request.messages }}</p>
+                            <p><strong>Status:</strong> {{ ad_request.status }}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+            <!-- Update Ad Request Modal -->
+            <div class="modal fade" id="updateAdRequestModal-{{ ad_request.ad_request_id }}" tabindex="-1"
+                aria-labelledby="updateAdRequestModalLabel-{{ ad_request.ad_request_id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="updateAdRequestModalLabel-{{ ad_request.ad_request_id }}">Edit
+                                Ad Request</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="POST">
+                                <div>
+                                    <input type="hidden" name="_method" value="PUT">
+                                    <input type="hidden" name="ad_request_id" id="ad_request_id"
+                                        value="{{ ad_request.ad_request_id }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="campaign_id" class="form-label">Campaign Name</label>
+                                    <input type="text" class="form-control" id="campaign_id" name="campaign_id"
+                                        value="{{ id_to_campaign(ad_request.campaign_id) }}" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="influencer_id" class="form-label">Influencer Name</label>
+                                    <input type="text" class="form-control" id="influencer_id" name="influencer_id"
+                                        value="{{ id_to_influencer(ad_request.influencer_id) }}" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="requirements" class="form-label">Requirements</label>
+                                    <textarea class="form-control" id="requirements" name="requirements" rows="3"
+                                        required>{{ ad_request.requirements }}</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="payment_amount" class="form-label">Payment Amount</label>
+                                    <input type="number" step="0.01" class="form-control" id="payment_amount"
+                                        name="payment_amount" value="{{ ad_request.payment_amount }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="messages" class="form-label">Messages</label>
+                                    <textarea class="form-control" id="messages" name="messages" rows="3"
+                                        required>{{ ad_request.messages }}</textarea>
+                                </div>
+                                <button type="submit" class="btn btn-success">Update Ad Request</button>
+                                <button type="button" class="btn btn-secondary ms-2"
+                                    data-bs-dismiss="modal">Cancel</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Accept Ad Request Confirmation Modal -->
+            <div class="modal fade" id="acceptAdRequestModal-{{ ad_request.ad_request_id }}" tabindex="-1"
+                aria-labelledby="acceptAdRequestModalLabel-{{ ad_request.ad_request_id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="acceptAdRequestModalLabel-{{ ad_request.ad_request_id }}">
+                                Confirm Acceptance</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to accept this ad request?
+                        </div>
+                        <div class="modal-footer">
+                            <form method="POST">
+                                <input type="hidden" name="_method" value="ACCEPT">
+                                <input type="hidden" name="ad_request_id" value="{{ ad_request.ad_request_id }}">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                                <button type="submit" class="btn btn-success">Yes, Accept</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Reject Ad Request Confirmation Modal -->
+            <div class="modal fade" id="rejectAdRequestModal-{{ ad_request.ad_request_id }}" tabindex="-1"
+                aria-labelledby="rejectAdRequestModalLabel-{{ ad_request.ad_request_id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="rejectAdRequestModalLabel-{{ ad_request.ad_request_id }}">
+                                Confirm Rejection</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to reject this ad request?
+                        </div>
+                        <div class="modal-footer">
+                            <form method="POST">
+                                <input type="hidden" name="_method" value="REJECT">
+                                <input type="hidden" name="ad_request_id" value="{{ ad_request.ad_request_id }}">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                                <button type="submit" class="btn btn-danger">Yes, Reject</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Delete Ad Request Confirmation Modal -->
+            <div class="modal fade" id="deleteAdRequestModal-{{ ad_request.ad_request_id }}" tabindex="-1"
+                aria-labelledby="deleteAdRequestModalLabel-{{ ad_request.ad_request_id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteAdRequestModalLabel-{{ ad_request.ad_request_id }}">
+                                Confirm Delete</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to delete this ad request?
+                        </div>
+                        <div class="modal-footer">
+                            <form method="POST">
+                                <input type="hidden" name="_method" value="DELETE">
+                                <input type="hidden" name="ad_request_id" value="{{ ad_request.ad_request_id }}">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                                <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+
+            {% for negotiation in negotiations %}
+            <!-- View Negotiation Modal -->
+            <div class="modal fade" id="viewNegotiationModal-{{ negotiation.negotiation_id }}" tabindex="-1"
+                aria-labelledby="viewNegotiationModalLabel-{{ negotiation.negotiation_id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="viewNegotiationModalLabel-{{ negotiation.negotiation_id }}">
+                                Negotiation Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p><strong>Ad Request ID:</strong> {{ negotiation.ad_request_id }}</p>
+                            <p><strong>Campaign Name:</strong> {{ negotiation.ad_request.campaign.name }}</p>
+                            <p><strong>Sponsor Name:</strong> {{ negotiation.ad_request.sponsor.company_individual_name }}</p>
+                            <p><strong>Requirements:</strong> {{ negotiation.ad_request.requirements }}</p>
+                            <p><strong>Payment Amount:</strong> {{ negotiation.ad_request.payment_amount }}</p>
+                            <p><strong>Status:</strong> {{ negotiation.ad_request.status }}</p>
+                            <p><strong>Negotiation:</strong> {{ negotiation.message }}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit/Update Negotiation Modal -->
+            <div class="modal fade" id="editNegotiationModal-{{ negotiation.negotiation_id }}" tabindex="-1"
+                aria-labelledby="editNegotiationModalLabel-{{ negotiation.negotiation_id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editNegotiationModalLabel-{{ negotiation.negotiation_id }}">Edit
+                                Negotiation</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="POST">
+                                <div>
+                                    <input type="hidden" name="_method" value="UPDATENEGO">
+                                    <input type="hidden" name="negotiation_id" value="{{ negotiation.negotiation_id }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="message" class="form-label">Message</label>
+                                    <textarea class="form-control" id="message" name="message" rows="3"
+                                        required>{{ negotiation.message }}</textarea>
+                                </div>
+                                <button type="submit" class="btn btn-success">Update Negotiation</button>
+                                <button type="button" class="btn btn-secondary ms-2"
+                                    data-bs-dismiss="modal">Cancel</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Negotiation Modal (Negotiate Back) -->
+            <div class="modal fade" id="editNegotiationBackModal-{{ negotiation.negotiation_id }}" tabindex="-1"
+                aria-labelledby="editNegotiationBackModalLabel-{{ negotiation.negotiation_id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editNegotiationBackModalLabel-{{ negotiation.negotiation_id }}">
+                                Edit Negotiation</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="POST">
+                                <div>
+                                    <input type="hidden" name="_method" value="NEGOBACK">
+                                    <input type="hidden" name="negotiation_id" value="{{ negotiation.negotiation_id }}">
+                                    <input type="hidden" name="initiator" value="sponsor">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="message" class="form-label">Message</label>
+                                    <textarea class="form-control" id="message" name="message" rows="3"
+                                        required>{{ negotiation.message }}</textarea>
+                                </div>
+                                <button type="submit" class="btn btn-success">Update Negotiation</button>
+                                <button type="button" class="btn btn-secondary ms-2"
+                                    data-bs-dismiss="modal">Cancel</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Negotiation Modal -->
+            <div class="modal fade" id="deleteNegotiationModal-{{ negotiation.negotiation_id }}" tabindex="-1"
+                aria-labelledby="deleteNegotiationModalLabel-{{ negotiation.negotiation_id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteNegotiationModalLabel-{{ negotiation.negotiation_id }}">
+                                Confirm Delete</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to delete this negotiation?
+                        </div>
+                        <div class="modal-footer">
+                            <form method="POST">
+                                <input type="hidden" name="_method" value="NEGODEL">
+                                <input type="hidden" name="negotiation_id" value="{{ negotiation.negotiation_id }}">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                                <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            {% endfor %}
+
+            <!-- Create Ad Request Modal -->
+            <div class="modal fade" id="createAdRequestModal" tabindex="-1" aria-labelledby="createAdRequestModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="createAdRequestModalLabel">Create Ad Request</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="createAdRequestForm" method="POST">
+                                <input type="hidden" name="_method" value="POST">
+                                <div class="mb-3">
+                                    <label for="campaign" class="form-label">Campaign Name</label>
+                                    <select class="form-select" id="campaign_id" name="campaign_id" required>
+                                        {% for campaign in campaigns %}
+                                        <option value="{{ campaign.campaign_id }}">{{ campaign.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="input-group mb-3">
+                                    <input type="text" id="influencerUsername" class="form-control"
+                                        placeholder="Enter influencer username">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button"
+                                            id="searchButton">Search</button>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div id="influencerResults" class="list-group overflow-auto"
+                                        style="max-height: 100px;"></div>
+                                </div>
+                                <input type="hidden" id="selectedInfluencerId" name="influencer_id">
+
+                                <div class="mb-3">
+                                    <label for="requirements" class="form-label">Requirements</label>
+                                    <textarea class="form-control" id="requirements" name="requirements" rows="3"
+                                        required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="payment_amount" class="form-label">Payment Amount</label>
+                                    <input type="number" step="0.01" class="form-control" id="payment_amount"
+                                        name="payment_amount" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="messages" class="form-label">Messages</label>
+                                    <input type="text" class="form-control" id="messages" name="messages" required>
+                                </div>
+                                <button type="submit" class="btn btn-success">Create Ad Request</button>
+                                <button type="button" class="btn btn-secondary ms-2"
+                                    data-bs-dismiss="modal">Cancel</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}

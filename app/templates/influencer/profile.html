@@ -1,0 +1,548 @@
+{% extends '/influencer/dashboard_base.html' %}
+{% block title %} Profile {% endblock  %}
+{% block nav_title %} Profile {% endblock %}
+{% block content %}
+<div class="main">
+    <div class="container mt-2">
+        {% if message['message']=='Profile updated successfully!' %}
+            <div class="alert alert-success">
+                {{ message['message'] }}
+            </div>
+        {% elif message['message'] =='Profile picture removed successfully!' %}
+            <div class="alert alert-danger">
+                {{ message['message'] }}
+            </div>
+        {% elif message['message'] == 'Account created successfully!' %}
+            <div class="alert alert-success">
+                {{ message['message'] }}
+            </div>
+        {% endif %}
+            <div class="row">
+                <!-- Left Column -->
+                <div class="col-md-6">
+                    <form method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="_method" value="PUT1">
+                        <div class="card mb-4 p-3">
+                            <h5 class="card-title mb-3">Profile Picture</h5>
+                            <div class="d-flex align-items-center w-100 mb-2">
+                                <img src="{{ url_for('static', filename='/img/profile/' + user.profile_picture) }}" alt="Profile Picture" class="rounded-circle" style="width: 100px; height: 100px;">
+                                <div class="ms-3 flex-grow-1">
+                                    <h5 class="mb-0 text-capitalize">{{user.username}}</h5>
+                                    <p class="mb-3"> This will be displayed on your profile</p>
+                                    <label class="btn btn-success btn-sm me-2">
+                                        <input type="file" style="display: none;" name="profile_picture" accept="image/*">
+                                        Change Picture
+                                    </label>
+                                    <button class="btn btn-outline-danger btn-sm" type="button" id="removePictureButton">Remove Picture</button>
+                                </div>
+                            </div>
+                            <h5 class="card-title mt-3">Personal Information</h5>
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{user.name}}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" value="{{user.username}}">
+                                {% if message['message']=='Username already taken, Please try another.' %}
+                                <div class="text-danger">{{ message['message'] }}</div>
+                                {% elif message['message'] == 'Username contains invalid characters.' %}
+                                <div class="text-danger">{{ message['message'] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email address</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{user.email}}">
+                                {% if message['message']=='Email Address is already in use.' %}
+                                <div class="text-danger">{{ message['message'] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Category</label>
+                                <select class="form-select" id="category" name="category">
+                                    <option value="{{ user.category }}" selected>{{ user.category }}</option>
+                                    <option value="Fashion">Fashion</option>
+                                    <option value="Beauty">Beauty</option>
+                                    <option value="Technology">Technology</option>
+                                    <option value="Health & Fitness">Health & Fitness</option>
+                                    <option value="Travel">Travel</option>
+                                    <option value="Food & Beverage">Food & Beverage</option>
+                                    <option value="Gaming">Gaming</option>
+                                    <option value="Sports">Sports</option>
+                                    <option value="Entertainment">Entertainment</option>
+                                    <option value="Home & Lifestyle">Home & Lifestyle</option>
+                                </select>                                
+                            </div>
+                            <div class="d-flex justify-content-end mb-3">
+                                <button class="btn btn-success btn-sm" type="submit"><i class="ri-save-line"></i> Save Changes</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+    
+  <!-- Delete Profile Picture Confirmation -->
+  <div class="modal fade" id="removePictureModal" tabindex="-1" role="dialog" aria-labelledby="removePictureModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="removePictureModalLabel">Confirm Removal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="removePictureForm" method="POST">
+                <input type="hidden" name="_method" value="DPDELETE">
+                <div class="modal-body">
+                    Are you sure you want to remove the profile picture?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger" id="confirmRemovePicture">Yes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+                <!-- Right Column -->
+                <div class="col-md-6">
+                    <div class="card mb-4 p-3">
+                            <form method="POST">
+                            <input type="hidden" name="_method" value="PUT2">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <label for="bio" class="form-label"><h5>About Me</h5></label>
+                                    <input type="text" class="form-control" id="bio" name="bio" value="{{user.bio}}">
+                                </div>
+                                <div class="align-self-start">
+                                    <button class="btn btn-success btn-sm" type="submit"><i class="ri-save-line"></i> Save Changes</button>
+                                </div>
+                            </div>
+                            
+
+                            <div class="mt-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="card-title m-0">My Niches</h5>
+                                    <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#newNicheInput" aria-expanded="false" aria-controls="newNicheInput">
+                                        + Add Niche
+                                    </button>
+                                </div>
+                                <div class="mb-3">
+                                {% if user.niche %}
+                                {% set niches = user.niche.split(",") %}
+                                {% for niche in niches %}
+                                <span class="nich_btn">{{ niche }}</span>
+                                {% endfor %}
+                                {% else %}
+                                <div class="d-flex justify-content-center align-items-center"> 
+                                    <p class="fs-5">No niches added yet. </p>
+                                </div>
+                                {% endif %}
+                                </div>
+                                <div class="collapse mb-3" id="newNicheInput" multiple>
+                                    {% if user.category == 'Fashion' %}
+                                    <input class="form-check-input" type="checkbox" id="luxuryFashion" name="niches" value="Luxury Fashion" {% if checker('Luxury Fashion') %}checked{% endif %}>
+                                    <label class="form-check-label" for="luxuryFashion">Luxury Fashion</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="streetwear" name="niches" value="Streetwear" {% if checker('Streetwear') %}checked{% endif %}>
+                                    <label class="form-check-label" for="streetwear">Streetwear</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="sustainableFashion" name="niches" value="Sustainable Fashion" {% if checker('Sustainable Fashion') %}checked{% endif %}>
+                                    <label class="form-check-label" for="sustainableFashion">Sustainable Fashion</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="vintageClothing" name="niches" value="Vintage Clothing" {% if checker('Vintage Clothing') %}checked{% endif %}>
+                                    <label class="form-check-label" for="vintageClothing">Vintage Clothing</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="fashionAccessories" name="niches" value="Fashion Accessories" {% if checker('Fashion Accessories') %}checked{% endif %}>
+                                    <label class="form-check-label" for="fashionAccessories">Fashion Accessories</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="plusSizeFashion" name="niches" value="Plus Size Fashion" {% if checker('Plus Size Fashion') %}checked{% endif %}>
+                                    <label class="form-check-label" for="plusSizeFashion">Plus Size Fashion</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="ethnicWear" name="niches" value="Ethnic Wear" {% if checker('Ethnic Wear') %}checked{% endif %}>
+                                    <label class="form-check-label" for="ethnicWear">Ethnic Wear</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="fashionIllustration" name="niches" value="Fashion Illustration" {% if checker('Fashion Illustration') %}checked{% endif %}>
+                                    <label class="form-check-label" for="fashionIllustration">Fashion Illustration</label><br>
+                                    
+                                    {% elif user.category == 'Beauty' %}
+                                    <input class="form-check-input" type="checkbox" id="skincare" name="niches" value="Skincare" {% if checker('Skincare') %}checked{% endif %}>
+                                    <label class="form-check-label" for="skincare">Skincare</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="makeup" name="niches" value="Makeup" {% if checker('Makeup') %}checked{% endif %}>
+                                    <label class="form-check-label" for="makeup">Makeup</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="haircare" name="niches" value="Haircare" {% if checker('Haircare') %}checked{% endif %}>
+                                    <label class="form-check-label" for="haircare">Haircare</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="beautyInfluencersOfColor" name="niches" value="Beauty Influencers of Color" {% if checker('Beauty Influencers of Color') %}checked{% endif %}>
+                                    <label class="form-check-label" for="beautyInfluencersOfColor">Beauty Influencers of Color</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="nailArt" name="niches" value="Nail Art" {% if checker('Nail Art') %}checked{% endif %}>
+                                    <label class="form-check-label" for="nailArt">Nail Art</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="cosmeticsReviews" name="niches" value="Cosmetics Reviews" {% if checker('Cosmetics Reviews') %}checked{% endif %}>
+                                    <label class="form-check-label" for="cosmeticsReviews">Cosmetics Reviews</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="beautyTipsAndTricks" name="niches" value="Beauty Tips & Tricks" {% if checker('Beauty Tips & Tricks') %}checked{% endif %}>
+                                    <label class="form-check-label" for="beautyTipsAndTricks">Beauty Tips & Tricks</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="antiAging" name="niches" value="Anti-Aging" {% if checker('Anti-Aging') %}checked{% endif %}>
+                                    <label class="form-check-label" for="antiAging">Anti-Aging</label><br>
+                                    
+                                    {% elif user.category == 'Technology' %}
+                                    <input class="form-check-input" type="checkbox" id="gadgets" name="niches" value="Gadgets" {% if checker('Gadgets') %}checked{% endif %}>
+                                    <label class="form-check-label" for="gadgets">Gadgets</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="softwareApps" name="niches" value="Software/Apps" {% if checker('Software/Apps') %}checked{% endif %}>
+                                    <label class="form-check-label" for="softwareApps">Software/Apps</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="aiMachineLearning" name="niches" value="AI & Machine Learning" {% if checker('AI & Machine Learning') %}checked{% endif %}>
+                                    <label class="form-check-label" for="aiMachineLearning">AI & Machine Learning</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="consumerElectronics" name="niches" value="Consumer Electronics" {% if checker('Consumer Electronics') %}checked{% endif %}>
+                                    <label class="form-check-label" for="consumerElectronics">Consumer Electronics</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="cybersecurity" name="niches" value="Cybersecurity" {% if checker('Cybersecurity') %}checked{% endif %}>
+                                    <label class="form-check-label" for="cybersecurity">Cybersecurity</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="techReviews" name="niches" value="Tech Reviews" {% if checker('Tech Reviews') %}checked{% endif %}>
+                                    <label class="form-check-label" for="techReviews">Tech Reviews</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="programmingTutorials" name="niches" value="Programming Tutorials" {% if checker('Programming Tutorials') %}checked{% endif %}>
+                                    <label class="form-check-label" for="programmingTutorials">Programming Tutorials</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="robotics" name="niches" value="Robotics" {% if checker('Robotics') %}checked{% endif %}>
+                                    <label class="form-check-label" for="robotics">Robotics</label><br>
+                                    
+                                    {% elif user.category == 'Health & Fitness' %}
+                                    <input class="form-check-input" type="checkbox" id="fitnessTraining" name="niches" value="Fitness Training" {% if checker('Fitness Training') %}checked{% endif %}>
+                                    <label class="form-check-label" for="fitnessTraining">Fitness Training</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="nutritionSupplements" name="niches" value="Nutrition & Supplements" {% if checker('Nutrition & Supplements') %}checked{% endif %}>
+                                    <label class="form-check-label" for="nutritionSupplements">Nutrition & Supplements</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="yogaMeditation" name="niches" value="Yoga & Meditation" {% if checker('Yoga & Meditation') %}checked{% endif %}>
+                                    <label class="form-check-label" for="yogaMeditation">Yoga & Meditation</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="mentalHealthAwareness" name="niches" value="Mental Health Awareness" {% if checker('Mental Health Awareness') %}checked{% endif %}>
+                                    <label class="form-check-label" for="mentalHealthAwareness">Mental Health Awareness</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="runningMarathon" name="niches" value="Running & Marathon" {% if checker('Running & Marathon') %}checked{% endif %}>
+                                    <label class="form-check-label" for="runningMarathon">Running & Marathon</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="weightLoss" name="niches" value="Weight Loss" {% if checker('Weight Loss') %}checked{% endif %}>
+                                    <label class="form-check-label" for="weightLoss">Weight Loss</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="healthyRecipes" name="niches" value="Healthy Recipes" {% if checker('Healthy Recipes') %}checked{% endif %}>
+                                    <label class="form-check-label" for="healthyRecipes">Healthy Recipes</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="alternativeMedicine" name="niches" value="Alternative Medicine" {% if checker('Alternative Medicine') %}checked{% endif %}>
+                                    <label class="form-check-label" for="alternativeMedicine">Alternative Medicine</label><br>
+                                    
+                                    {% elif user.category == 'Travel' %}
+                                    <input class="form-check-input" type="checkbox" id="adventureTravel" name="niches" value="Adventure Travel" {% if checker('Adventure Travel') %}checked{% endif %}>
+                                    <label class="form-check-label" for="adventureTravel">Adventure Travel</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="luxuryTravel" name="niches" value="Luxury Travel" {% if checker('Luxury Travel') %}checked{% endif %}>
+                                    <label class="form-check-label" for="luxuryTravel">Luxury Travel</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="budgetTravel" name="niches" value="Budget Travel" {% if checker('Budget Travel') %}checked{% endif %}>
+                                    <label class="form-check-label" for="budgetTravel">Budget Travel</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="soloTravel" name="niches" value="Solo Travel" {% if checker('Solo Travel') %}checked{% endif %}>
+                                    <label class="form-check-label" for="soloTravel">Solo Travel</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="culturalTravel" name="niches" value="Cultural Travel" {% if checker('Cultural Travel') %}checked{% endif %}>
+                                    <label class="form-check-label" for="culturalTravel">Cultural Travel</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="familyTravel" name="niches" value="Family Travel" {% if checker('Family Travel') %}checked{% endif %}>
+                                    <label class="form-check-label" for="familyTravel">Family Travel</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="travelPhotography" name="niches" value="Travel Photography" {% if checker('Travel Photography') %}checked{% endif %}>
+                                    <label class="form-check-label" for="travelPhotography">Travel Photography</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="backpacking" name="niches" value="Backpacking" {% if checker('Backpacking') %}checked{% endif %}>
+                                    <label class="form-check-label" for="backpacking">Backpacking</label><br>
+                                    
+                                    {% elif user.category == 'Food & Beverage' %}
+                                    <input class="form-check-input" type="checkbox" id="cookingRecipes" name="niches" value="Cooking & Recipes" {% if checker('Cooking & Recipes') %}checked{% endif %}>
+                                    <label class="form-check-label" for="cookingRecipes">Cooking & Recipes</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="healthyEating" name="niches" value="Healthy Eating" {% if checker('Healthy Eating') %}checked{% endif %}>
+                                    <label class="form-check-label" for="healthyEating">Healthy Eating</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="veganVegetarian" name="niches" value="Vegan & Vegetarian" {% if checker('Vegan & Vegetarian') %}checked{% endif %}>
+                                    <label class="form-check-label" for="veganVegetarian">Vegan & Vegetarian</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="beverageTasting" name="niches" value="Beverage Tasting (e.g., Wine, Craft Beer)" {% if checker('Beverage Tasting (e.g., Wine, Craft Beer)') %}checked{% endif %}>
+                                    <label class="form-check-label" for="beverageTasting">Beverage Tasting (e.g., Wine, Craft Beer)</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="restaurantReviews" name="niches" value="Restaurant Reviews" {% if checker('Restaurant Reviews') %}checked{% endif %}>
+                                    <label class="form-check-label" for="restaurantReviews">Restaurant Reviews</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="foodStyling" name="niches" value="Food Styling" {% if checker('Food Styling') %}checked{% endif %}>
+                                    <label class="form-check-label" for="foodStyling">Food Styling</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="glutenFreeCooking" name="niches" value="Gluten-Free Cooking" {% if checker('Gluten-Free Cooking') %}checked{% endif %}>
+                                    <label class="form-check-label" for="glutenFreeCooking">Gluten-Free Cooking</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="dessertsBaking" name="niches" value="Desserts & Baking" {% if checker('Desserts & Baking') %}checked{% endif %}>
+                                    <label class="form-check-label" for="dessertsBaking">Desserts & Baking</label><br>
+                                    
+                                    {% elif user.category == 'Gaming' %}
+                                    <input class="form-check-input" type="checkbox" id="pcGaming" name="niches" value="PC Gaming" {% if checker('PC Gaming') %}checked{% endif %}>
+                                    <label class="form-check-label" for="pcGaming">PC Gaming</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="consoleGaming" name="niches" value="Console Gaming" {% if checker('Console Gaming') %}checked{% endif %}>
+                                    <label class="form-check-label" for="consoleGaming">Console Gaming</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="mobileGaming" name="niches" value="Mobile Gaming" {% if checker('Mobile Gaming') %}checked{% endif %}>
+                                    <label class="form-check-label" for="mobileGaming">Mobile Gaming</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="esports" name="niches" value="Esports" {% if checker('Esports') %}checked{% endif %}>
+                                    <label class="form-check-label" for="esports">Esports</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="gamingHardware" name="niches" value="Gaming Hardware" {% if checker('Gaming Hardware') %}checked{% endif %}>
+                                    <label class="form-check-label" for="gamingHardware">Gaming Hardware</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="gameReviews" name="niches" value="Game Reviews" {% if checker('Game Reviews') %}checked{% endif %}>
+                                    <label class="form-check-label" for="gameReviews">Game Reviews</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="gameDevelopment" name="niches" value="Game Development" {% if checker('Game Development') %}checked{% endif %}>
+                                    <label class="form-check-label" for="gameDevelopment">Game Development</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="streamingContentCreation" name="niches" value="Streaming & Content Creation" {% if checker('Streaming & Content Creation') %}checked{% endif %}>
+                                    <label class="form-check-label" for="streamingContentCreation">Streaming & Content Creation</label><br>
+                                    
+                                    {% elif user.category == 'Sports' %}
+                                    <input class="form-check-input" type="checkbox" id="soccerFootball" name="niches" value="Soccer/Football" {% if checker('Soccer/Football') %}checked{% endif %}>
+                                    <label class="form-check-label" for="soccerFootball">Soccer/Football</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="basketball" name="niches" value="Basketball" {% if checker('Basketball') %}checked{% endif %}>
+                                    <label class="form-check-label" for="basketball">Basketball</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="tennis" name="niches" value="Tennis" {% if checker('Tennis') %}checked{% endif %}>
+                                    <label class="form-check-label" for="tennis">Tennis</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="extremeSports" name="niches" value="Extreme Sports" {% if checker('Extreme Sports') %}checked{% endif %}>
+                                    <label class="form-check-label" for="extremeSports">Extreme Sports</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="fitnessCompetitions" name="niches" value="Fitness Competitions" {% if checker('Fitness Competitions') %}checked{% endif %}>
+                                    <label class="form-check-label" for="fitnessCompetitions">Fitness Competitions</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="golf" name="niches" value="Golf" {% if checker('Golf') %}checked{% endif %}>
+                                    <label class="form-check-label" for="golf">Golf</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="athletics" name="niches" value="Athletics" {% if checker('Athletics') %}checked{% endif %}>
+                                    <label class="form-check-label" for="athletics">Athletics</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="sportsTraining" name="niches" value="Sports Training" {% if checker('Sports Training') %}checked{% endif %}>
+                                    <label class="form-check-label" for="sportsTraining">Sports Training</label><br>
+                                    
+                                    {% elif user.category == 'Entertainment' %}
+                                    <input class="form-check-input" type="checkbox" id="moviesTVShows" name="niches" value="Movies & TV Shows" {% if checker('Movies & TV Shows') %}checked{% endif %}>
+                                    <label class="form-check-label" for="moviesTVShows">Movies & TV Shows</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="music" name="niches" value="Music" {% if checker('Music') %}checked{% endif %}>
+                                    <label class="form-check-label" for="music">Music</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="celebrityNewsGossip" name="niches" value="Celebrity News & Gossip" {% if checker('Celebrity News & Gossip') %}checked{% endif %}>
+                                    <label class="form-check-label" for="celebrityNewsGossip">Celebrity News & Gossip</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="comedyHumor" name="niches" value="Comedy & Humor" {% if checker('Comedy & Humor') %}checked{% endif %}>
+                                    <label class="form-check-label" for="comedyHumor">Comedy & Humor</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="bookReviews" name="niches" value="Book Reviews" {% if checker('Book Reviews') %}checked{% endif %}>
+                                    <label class="form-check-label" for="bookReviews">Book Reviews</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="theaterPerformingArts" name="niches" value="Theater & Performing Arts" {% if checker('Theater & Performing Arts') %}checked{% endif %}>
+                                    <label class="form-check-label" for="theaterPerformingArts">Theater & Performing Arts</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="videoEditingProduction" name="niches" value="Video Editing & Production" {% if checker('Video Editing & Production') %}checked{% endif %}>
+                                    <label class="form-check-label" for="videoEditingProduction">Video Editing & Production</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="animationCartoons" name="niches" value="Animation & Cartoons" {% if checker('Animation & Cartoons') %}checked{% endif %}>
+                                    <label class="form-check-label" for="animationCartoons">Animation & Cartoons</label><br>
+                                    
+                                    {% elif user.category == 'Home & Lifestyle' %}
+                                    <input class="form-check-input" type="checkbox" id="interiorDesign" name="niches" value="Interior Design" {% if checker('Interior Design') %}checked{% endif %}>
+                                    <label class="form-check-label" for="interiorDesign">Interior Design</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="diyProjects" name="niches" value="DIY Projects" {% if checker('DIY Projects') %}checked{% endif %}>
+                                    <label class="form-check-label" for="diyProjects">DIY Projects</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="parenting" name="niches" value="Parenting" {% if checker('Parenting') %}checked{% endif %}>
+                                    <label class="form-check-label" for="parenting">Parenting</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="petCare" name="niches" value="Pet Care" {% if checker('Pet Care') %}checked{% endif %}>
+                                    <label class="form-check-label" for="petCare">Pet Care</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="gardening" name="niches" value="Gardening" {% if checker('Gardening') %}checked{% endif %}>
+                                    <label class="form-check-label" for="gardening">Gardening</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="homeOrganization" name="niches" value="Home Organization" {% if checker('Home Organization') %}checked{% endif %}>
+                                    <label class="form-check-label" for="homeOrganization">Home Organization</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="homeCooking" name="niches" value="Home Cooking" {% if checker('Home Cooking') %}checked{% endif %}>
+                                    <label class="form-check-label" for="homeCooking">Home Cooking</label><br>
+                                    
+                                    <input class="form-check-input" type="checkbox" id="smartHomeTechnology" name="niches" value="Smart Home Technology" {% if checker('Smart Home Technology') %}checked{% endif %}>
+                                    <label class="form-check-label" for="smartHomeTechnology">Smart Home Technology</label><br>
+                                    
+                                    {% else %}
+                                    <div class="d-flex justify-content-center align-items-center"> 
+                                        <p class="btn btn-outline-secondary">Please select a category first! </p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title m-0">Social Media Accounts</h5>
+                                <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#newAccountInput" aria-expanded="false" aria-controls="newAccountInput">
+                                    + Add Account
+                                </button>
+                            </div>
+                            <div style="margin-top: -10px; margin-bottom: 10px;">
+                                {% if message['message'] == 'Platform updated successfully!' %}
+                                    <div class="text-success">
+                                        {{ message['message'] }}
+                                    </div>
+                                {% elif message['message'] == 'Platform already exist.' %}
+                                    <div class="text-danger">
+                                        {{ message['message'] }}
+                                    </div>
+                                {% elif message['message'] ==  'Platform deleted successfully!' %}
+                                    <div class="text-danger">
+                                        {{ message['message'] }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+
+                            <div class="collapse mb-3" id="newAccountInput">
+                                <select class="form-select mb-2" id="platform" name="platform">
+                                    <option value="">Select Platform</option>
+                                    <option value="Facebook">Facebook</option>
+                                    <option value="Twitter">Twitter</option>
+                                    <option value="Instagram">Instagram</option>
+                                    <option value="LinkedIn">LinkedIn</option>
+                                    <option value="YouTube">YouTube</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <input type="number" class="form-control mb-2" id="reach" name="reach" placeholder="Reach">
+                                <input type="url" class="form-control" id="url" name="url" placeholder="URL">
+                            </div>                          
+                </form>
+
+                {% if user.platforms %}
+                {% for platform in user.platforms %}
+                <div class="mb-2 d-flex justify-content-between align-items-center">
+                <span>
+                    {% if platform.platform.lower() == 'youtube' %}
+                        <a class="btn social-btn force-white" style="background-color: #ed302f;" href="{{ platform.url }}" role="button">
+                            <i class="fab fa-youtube me-2"></i>{{ converter(platform.reach) }} Subscribers
+                        </a>
+                    {% elif platform.platform.lower() == 'instagram' %}
+                        <a class="btn social-btn force-white" style="background-color: #ac2bac;" href="{{ platform.url }}" role="button">
+                            <i class="fab fa-instagram me-2"></i>{{converter(platform.reach)}} Followers
+                        </a>
+                    {% elif platform.platform.lower() == 'facebook' %}
+                        <a class="btn social-btn force-white" style="background-color: #3b5998;" href="{{ platform.url }}" role="button">
+                            <i class="fab fa-facebook me-2"></i>{{converter(platform.reach)}} Followers
+                        </a>
+                    {% elif platform.platform.lower() == 'twitter' %}
+                        <a class="btn social-btn force-white" style="background-color: #55acee;" href="{{ platform.url }}" role="button">
+                            <i class="fab fa-twitter me-2"></i>{{converter(platform.reach)}} Followers
+                        </a>
+                    {% elif platform.platform.lower() == 'linkedin' %}
+                        <a class="btn social-btn force-white" style="background-color: #0082ca;" href="{{ platform.url }}" role="button">
+                            <i class="fab fa-linkedin me-2"></i>{{converter(platform.reach)}} Followers
+                        </a>
+                    {% else %}
+                        <a class="btn social-btn force-white" style="background-color: #25d366;" href="{{ platform.url }}" role="button">
+                            <i class="fa fa-globe me-2"></i>{{converter(platform.reach)}} Followers
+                        </a>
+                    {% endif %}
+                </span>
+             <span>
+                <button class="btn btn-warning me-2 btn-sm" data-bs-toggle="modal" data-bs-target="#editPlatformModal-{{ platform.influence_id }}">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                
+                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deletePlatformModal-{{ platform.influence_id }}">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </span>
+            </div>
+                 <!-- Edit Platform Modal -->
+<div class="modal fade" id="editPlatformModal-{{ platform.influence_id }}" tabindex="-1" aria-labelledby="editPlatformModalLabel-{{ platform.influence_id }}" aria-hidden="true">
+<div class="modal-dialog modal-dialog-centered">
+<div class="modal-content">
+    <div class="modal-header">
+        <h5 class="modal-title" id="editPlatformModalLabel-{{ platform.influence_id }}">Edit Platform</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        <form method="POST">
+            <input type="hidden" name="_method" value="PUT3">
+            <input type="hidden" name="influence_id" value="{{ platform.influence_id }}">
+            <div class="mb-3">
+                <label for="platform" class="form-label">Platform</label>
+                <select class="form-select" id="platform" name="platform" required>
+                    <option value="Facebook" {% if platform.platform == 'Facebook' %} selected {% endif %}>Facebook</option>
+                    <option value="Twitter" {% if platform.platform == 'Twitter' %} selected {% endif %}>Twitter</option>
+                    <option value="Instagram" {% if platform.platform == 'Instagram' %} selected {% endif %}>Instagram</option>
+                    <option value="LinkedIn" {% if platform.platform == 'LinkedIn' %} selected {% endif %}>LinkedIn</option>
+                    <option value="YouTube" {% if platform.platform == 'YouTube' %} selected {% endif %}>YouTube</option>
+                    <option value="Other" {% if platform.platform == 'Other' %} selected {% endif %}>Other</option>
+                </select>                        
+            </div>
+            <div class="mb-3">
+                <label for="reach" class="form-label">Reach</label>
+                <input type="number" class="form-control" id="reach" name="reach" value="{{ platform.reach }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="url" class="form-label">URL</label>
+                <input type="url" class="form-control" id="url" name="url" placeholder="{{platform.url}}" required>
+            </div>
+            <button type="submit" class="btn btn-success">Update Platform</button>
+            <button type="button" class="btn btn-secondary ms-2" data-bs-dismiss="modal">Cancel</button>
+        </form>                    
+    </div>
+</div>
+</div>
+</div>
+                 <!-- Delete Platform Confirmation Modal -->
+<div class="modal fade" id="deletePlatformModal-{{ platform.influence_id }}" tabindex="-1" aria-labelledby="deletePlatformModalLabel-{{ platform.influence_id }}" aria-hidden="true">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+    <h5 class="modal-title" id="deletePlatformModalLabel-{{ platform.influence_id }}">Confirm Delete</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+    Are you sure you want to delete the platform "{{ platform.platform }}"?
+</div>
+<div class="modal-footer">
+    <form method="POST">
+        <input type="hidden" name="_method" value="DELETE">
+        <input type="hidden" name="influence_id" value="{{ platform.influence_id }}">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+    </form>
+</div>
+</div>
+</div>
+</div>
+{% endfor %}
+{% else %}
+<div class="d-flex justify-content-center align-items-center"> 
+    <p class="fs-5">No accounts added yet.</p>
+</div>
+{% endif %}
+            </div>
+        </div>
+        </div>
+    </div>
+    </div>
+{% endblock %}

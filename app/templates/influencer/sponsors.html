@@ -1,0 +1,191 @@
+{% extends 'influencer/dashboard_base.html' %}
+{% block title %} Sponsors {% endblock %}
+{% block nav_title %} Sponsors {% endblock %}
+
+{% block content %}
+<div class="main">
+        <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <div class="card mt-2" style="width: 98%; margin-left: 10px;">
+        <form>
+                <div class="row align-items-center mt-3">
+                    <div class="col-auto mb-3" style="margin: 5px -10px 0px 15px;">
+                        <i class="bx bx-filter" style="font-size: 30px;"></i>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <input type="text" class="form-control" id="name" name="name" placeholder="Name"
+                            value="{{ query['name'] }}">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <select class="form-select" id="industry" name="industry">
+                            <option value="" {% if query["industry"]=="" %} selected {% endif %}>Category</option>
+                            <option value="Fashion" {% if query["industry"]=="Fashion" %} selected {% endif %}>Fashion
+                            </option>
+                            <option value="Beauty" {% if query["industry"]=="Beauty" %} selected {% endif %}>Beauty
+                            </option>
+                            <option value="Technology" {% if query["industry"]=="Technology" %} selected {% endif %}>
+                                Technology</option>
+                            <option value="Health & Fitness" {% if query["industry"]=="Health & Fitness" %} selected {%
+                                endif %}>Health & Fitness</option>
+                            <option value="Travel" {% if query["industry"]=="Travel" %} selected {% endif %}>Travel
+                            </option>
+                            <option value="Food & Beverage" {% if query["industry"]=="Food & Beverage" %} selected {%
+                                endif %}>Food & Beverage</option>
+                            <option value="Gaming" {% if query["industry"]=="Gaming" %} selected {% endif %}>Gaming
+                            </option>
+                            <option value="Sports" {% if query["industry"]=="Sports" %} selected {% endif %}>Sports
+                            </option>
+                            <option value="Entertainment" {% if query["industry"]=="Entertainment" %} selected {% endif
+                                %}>
+                                Entertainment</option>
+                            <option value="Home & Lifestyle" {% if query["industry"]=="Home & Lifestyle" %} selected {%
+                                endif %}>Home & Lifestyle</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <input type="number" class="form-control" id="budget" name="budget" placeholder="Minimum Budget"
+                            value="{{ query['budget'] }}">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end mb-3">
+                        <button class="btn btn-sm force-white" style="background-color: #55acee;" type="submit"><i class="fa fa-paper-plane me-2"></i> Apply</button>
+                    </div>
+                </div>
+            </form>
+            {% set sponsors = sponsors | selectattr('flagged', 'equalto', 'False') | list %}
+            {% set total_sponsor = sponsors | list | length  %}
+            <h5 class="text-muted d-flex align-items-center" style="margin-left: 20px;"> {% if total_sponsor > 1 %} Total Sponsors: {{ total_sponsor }} {% else %} Total Sponsor: {{total_sponsor}} {% endif %}</h5>
+
+            {% if total_sponsor == 0 %}
+            <div class="d-flex flex-column align-items-center p-4 bg-white shadow-sm rounded">
+                <img src="{{ url_for('static', filename='/img/empty.png') }}" alt="NoctiWave" height="150px">
+                <div class="text-secondary font-weight-bold mb-3 fs-5">
+                  No Sponsor Found
+                </div>
+            </div>        
+            {% else %} 
+            <div class="row">
+                {% for sponsor in sponsors %}
+                <div class="col-md-4 mb-4">
+                    <div class="card mx-auto" style="max-width: 600px; border: 1px solid #ddd; border-radius: 8px;">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                                <img src="{{ url_for('static', filename='/img/profile/' + sponsor.user.profile_picture) }}"
+                                    alt="Profile Picture" class="rounded-circle"
+                                    style="width: 50px; height: 50px; margin-right: 10px;">
+                                <div class="ml-3 flex-grow-1">
+                                    {% if sponsor.company_individual_name | length < 14 %} <h5 class="mb-0">{{
+                                        sponsor.company_individual_name }}</h5>
+                                        {% else %}
+                                        <h5 class="mb-0">{{ sponsor.company_individual_name[:11] }}..</h5>
+                                        {% endif %}
+                                        <p class="text-muted mb-0">@{{ sponsor.user.username }}</p>
+                                </div>
+                                <button class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#createAdRequestModal-{{ sponsor.sponsor_id }}">
+                                <i class="fas fa-plus-circle"></i> AdRequest
+                            </button>
+                            </div>
+                            <hr class="mb-1">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-4">
+                                        <h5 class="mb-0" style="font-size: 17px;">Website</h5>
+                                        <p style="color: #676767;">{{ sponsor.website }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-4">
+                                        <h5 class="mb-0" style="font-size: 17px;">Budget</h5>
+                                        <p style="color: #676767;">₹{{ '{:,.2f}'.format(sponsor.budget) }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-4">
+                                        <h5 class="mb-0" style="font-size: 17px;">Category</h5>
+                                        <p style="color: #676767;">{{ sponsor.industry }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-4">
+                                        <h5 class="mb-0" style="font-size: 17px;">Campaign</h5>
+                                        {% set active_campaign = sponsor.campaigns | selectattr('flagged', 'equalto',
+                                        'False') | list %}
+                                        <p style="color: #676767;">Active: {{active_campaign | length}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+   <!-- Create Ad Request Modal -->
+   <div class="modal fade" id="createAdRequestModal-{{ sponsor.sponsor_id }}" tabindex="-1" aria-labelledby="createAdRequestModalLabel-{{ sponsor.sponsor_id }}"
+   aria-hidden="true">
+   <div class="modal-dialog modal-dialog-centered">
+       <div class="modal-content">
+           <div class="modal-header">
+               <h5 class="modal-title" id="createAdRequestModalLabel-{{ sponsor.sponsor_id }}">Create Ad Request</h5>
+               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+           </div>
+           <div class="modal-body">
+            {% if active_campaign %}
+               <form id="createAdRequestForm-{{ sponsor.sponsor_id }}" method="POST">
+                <input type="hidden" name="_method" value="POST">
+                   <div class="mb-3">
+                       <label for="campaign-{{ sponsor.sponsor_id }}" class="form-label">Campaign Name</label>
+                       <select class="form-select" id="campaign_id-{{ sponsor.sponsor_id }}" name="campaign_id" required>
+                           {% for campaign in active_campaign %}
+                           <option value="{{ campaign.campaign_id }}">{{ campaign.name }}</option>
+                           {% endfor %}
+                       </select>
+                   </div>
+                   <input type="hidden" id="selectedSponsor-{{ sponsor.sponsor_id }}" name="sponsor_id" value="{{sponsor.sponsor_id}}">
+                   <div class="mb-3">
+                       <label for="requirements" class="form-label">Requirements</label>
+                       <textarea class="form-control" id="requirements-{{ sponsor.sponsor_id }}" name="requirements" rows="3"
+                           required></textarea>
+                   </div>
+                   <div class="mb-3">
+                       <label for="payment_amount" class="form-label">Payment Amount</label>
+                       <input type="number" step="0.01" class="form-control" id="payment_amount-{{ sponsor.sponsor_id }}"
+                           name="payment_amount" required>
+                   </div>
+                   <div class="mb-3">
+                       <label for="messages" class="form-label">Messages</label>
+                       <input type="text" class="form-control" id="messages-{{ sponsor.sponsor_id }}" name="messages" required>
+                   </div>
+                   <button type="submit" class="btn btn-success">Create Ad Request</button>
+                   <button type="button" class="btn btn-secondary ms-2"
+                       data-bs-dismiss="modal">Cancel</button>
+               </form>
+               {% else %}
+               <div class="d-flex flex-column align-items-center p-4 bg-white shadow-sm rounded">
+                    <img src="{{ url_for('static', filename='/img/empty.png') }}" alt="Campaign" height="150px">
+                    <div class="text-secondary font-weight-bold mb-3 fs-5">
+                    No Active Campaign
+                    </div>
+                </div>   
+               {% endif %}
+           </div>
+       </div>
+   </div>
+</div>
+
+
+
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    </div>
+</div>
+{% endblock %}

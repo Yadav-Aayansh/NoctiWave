@@ -1,0 +1,317 @@
+{% extends 'admin/dashboard_base.html' %}
+{% block title %} Camapigns {% endblock %}
+{% block nav_title %} Camapigns {%endblock %}
+
+{% block content %}
+<div class="main">
+    <div class="container mt-2">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <div class="section1">
+            <div class="box1 box" style="width: 230px;">
+                <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                    <img src="/static/img/campaign.svg" alt="Camapigns" style="height: 40px; margin-right: 10px;">
+                    <div class="ml-3 flex-grow-1">
+                        <div class="money_display">{{ campaign_const | list | length }}</div>
+                        <h3 class="money_type_title">Total Campaign</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="box1 box" style="width: 230px;">
+                <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                    <img src="/static/img/flagged.png" alt="Campaigns" style="height: 35px; margin-right: 10px;">
+                    <div class="ml-3 flex-grow-1">
+                        <div class="money_display">{{campaign_const | selectattr('flagged', 'equalto', 'True') | list |
+                            length }}</div>
+                        <h3 class="money_type_title">Flagged Campaign</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="box1 box" style="width: 230px;">
+                <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                    <img src="/static/img/private.png" alt="Campaigns" style="height: 35px; margin-right: 10px;">
+                    <div class="ml-3 flex-grow-1">
+                        <div class="money_display">{{campaign_const | selectattr('visibility', 'equalto', 'Private') | list |
+                            length }}</div>
+                        <h3 class="money_type_title">Private Campaign</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="box1 box" style="width: 230px;">
+                <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                    <img src="/static/img/budget.png" alt="Budget" style="height: 37px; margin-right: 10px;">
+                    <div class="ml-3 flex-grow-1">
+                        <div class="money_display">₹{{ converter(campaign_const | map(attribute='budget') | sum) }}
+                        </div>
+                        <h3 class="money_type_title">Total Budget</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="box1 box" style="width: 243px;">
+                <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                    <img src="/static/img/average.png" alt="Average" style="height: 37px; margin-right: 10px;">
+                    <div class="ml-3 flex-grow-1">
+                        {% if total_sponsors != 0 %}
+                        <div class="money_display">{{ '{:,.2f}'.format(campaign_const | list | length / total_sponsors) }}</div>
+                        {% else %}
+                        <div class="money_display">0</div>
+                        {% endif %}
+                        <h3 class="money_type_title">Campaign/Sponsor</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3" style="width: 100%; height: 20rem;">
+            <div class="d-flex justify-content-around align-items-center" style="height: 100%;">
+                <div style="width: 39.5%; height: 100%;">
+                    <canvas id="campaignChart" style="width: 100%; height: 100%;"></canvas>
+                </div>
+                <div style="width: 22.5%; height: 100%;">
+                    <canvas id="flaggedCampaign" style="width: 100%; height: 100%;"></canvas>
+                </div>
+                <div style="width: 22.5%; height: 100%;">
+                    <canvas id="privateCampaign" style="width: 100%; height: 100%;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <form>
+                <div class="row align-items-center mt-3">
+                    <div class="col-auto mb-3" style="margin: 5px -10px 0px 15px;">
+                        <i class="bx bx-filter" style="font-size: 30px;"></i>
+                    </div>
+                    <div class="col mb-3" style="width: 18%;">
+                        <input type="text" class="form-control" id="name" name="name" placeholder="Camapign Name"
+                            value="{{ query['name'] }}">
+                    </div>
+                    <div class="col mb-3" style="width: 15%;">
+                        <input type="text" class="form-control" id="sponsor_name" name="sponsor_name" placeholder="Sponsor Name"
+                            value="{{ query['sponsor_name'] }}">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <input type="number" class="form-control" id="budget" name="budget" placeholder="Minimum Budget"
+                            value="{{ query['budget'] }}">
+                    </div>
+                    <div class="col mb-3" style="width: 13%;">
+                        <select class="form-select" id="industry" name="industry">
+                            <option value="" {% if query["industry"] == "" %} selected {% endif %}>Category</option>
+                            <option value="Fashion" {% if query["industry"] == "Fashion" %} selected {% endif %}>Fashion</option>
+                            <option value="Beauty" {% if query["industry"] == "Beauty" %} selected {% endif %}>Beauty</option>
+                            <option value="Technology" {% if query["industry"] == "Technology" %} selected {% endif %}>Technology</option>
+                            <option value="Health & Fitness" {% if query["industry"] == "Health & Fitness" %} selected {% endif %}>Health & Fitness</option>
+                            <option value="Travel" {% if query["industry"] == "Travel" %} selected {% endif %}>Travel</option>
+                            <option value="Food & Beverage" {% if query["industry"] == "Food & Beverage" %} selected {% endif %}>Food & Beverage</option>
+                            <option value="Gaming" {% if query["industry"] == "Gaming" %} selected {% endif %}>Gaming</option>
+                            <option value="Sports" {% if query["industry"] == "Sports" %} selected {% endif %}>Sports</option>
+                            <option value="Entertainment" {% if query["industry"] == "Entertainment" %} selected {% endif %}>Entertainment</option>
+                            <option value="Home & Lifestyle" {% if query["industry"] == "Home & Lifestyle" %} selected {% endif %}>Home & Lifestyle</option>
+                        </select>                        
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <select class="form-select" id="flagged" name="flagged">
+                            <option value="" {% if query["flagged"]=="" %} selected {% endif %}>Flagging Status
+                            </option>
+                            <option value="True" {% if query["flagged"]=="True" %} selected {% endif %}>Flagged
+                            </option>
+                            <option value="False" {% if query["flagged"]=="False" %} selected {% endif %}>Non
+                                Flagged</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end mb-3">
+                        <button class="btn btn-sm force-white" style="background-color: #55acee;" type="submit"><i
+                                class="fa fa-paper-plane me-2"></i> Apply</button>
+                    </div>
+                </div>
+            </form>
+
+            {% set total_campaign = campaigns | list | length %}
+            <div class="row">
+                <div class="col-md-9">
+                    <h5 class="text-muted d-flex align-items-center" style="margin-left: 20px;"> {% if total_campaign >
+                        1 %} Total Campaigns: {{ total_campaign }} {% else %} Total Campaign: {{total_campaign}} {%
+                        endif %}</h5>
+                </div>
+            </div>
+            {% if total_campaign == 0 %}
+        <div class="d-flex flex-column align-items-center p-4 bg-white shadow-sm rounded">
+            <img src="{{ url_for('static', filename='/img/empty.png') }}" alt="NoctiWave" height="150px">
+            <div class="text-secondary font-weight-bold mb-3 fs-5">
+                No Campaign Found
+            </div>
+        </div>
+            {% else %}
+            <div class="container mt-4">
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered table-hover" id="campaignsTable">
+                        <thead class="table-success">
+                            <tr>
+                                <th scope="col" class="text-center" style="width: 25%;">Campaign Name</th>
+                                <th scope="col" class="text-center">Sponsor</th>
+                                <th scope="col" class="text-center">Start Date</th>
+                                <th scope="col" class="text-center">End Date</th>
+                                <th scope="col" class="text-center">Budget</th>
+                                <th scope="col" class="text-center">Visibility</th>
+                                <th scope="col" class="text-center" style="width: 25%;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for campaign in campaigns %}
+                            <tr>
+                                <td class="text-center">{{ campaign.name }}</td>
+                                <td class="text-center">{{ id_to_sponsor(campaign.sponsor_id) }}</td>
+                                <td class="text-center">{{ campaign.start_date }}</td>
+                                <td class="text-center">{{ campaign.end_date }}</td>
+                                <td class="text-center">₹{{ '{:,.2f}'.format(campaign.budget) }}</td>
+                                <td class="text-center">{{ campaign.visibility }}</td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm" style="background-color: #00ffff; margin-right: 5px;"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#viewCampaignModal-{{ campaign.campaign_id }}">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                    {% if campaign.flagged == 'False' %}
+                                    <button class="btn btn-sm btn-warning flagCampaignLink"
+                                        data-campaign-id="{{ campaign.campaign_id }}" style="margin-right: 5px;">
+                                        <i class="fas fa-flag"></i> Flag
+                                    </button>
+                                    {% else %}
+                                    <button class="btn btn-sm btn-warning unflagCampaignLink"
+                                        data-campaign-id="{{ campaign.campaign_id }}" style="margin-right: 5px;">
+                                        <i class="fas fa-flag"></i> Unflag
+                                    </button>
+                                    {% endif %}
+                                    <button class="btn btn-sm btn-danger deleteCampaignLink"
+                                        data-campaign-id="{{ campaign.campaign_id }}">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+        </div>
+    </div>
+</div>
+
+{% for campaign in campaigns %}
+<!-- View Campaign Modal -->
+<div class="modal fade" id="viewCampaignModal-{{campaign.campaign_id}}" tabindex="-1"
+    aria-labelledby="viewCampaignModalLabel-{{campaign.campaign_id}}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewCampaignModalLabel-{{campaign.campaign_id}}">Campaign Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Campaign Name:</strong> {{ campaign.name }}</p>
+                <p><strong>Sponsor:</strong> {{ id_to_sponsor(campaign.sponsor_id) }}</p>
+                <p><strong>Start Date:</strong> {{ campaign.start_date }}</p>
+                <p><strong>End Date:</strong> {{ campaign.end_date }}</p>
+                <p><strong>Budget:</strong> ₹{{ '{:,.2f}'.format(campaign.budget) }}</p>
+                <p><strong>Visibility:</strong> {{ campaign.visibility }}</p>
+                <p><strong>Goals:</strong> {{ campaign.goals }}</p>
+                <p><strong>Description</strong> {{ campaign.description }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Flag Campaign Confirmation Modal -->
+<div class="modal fade" id="flagCampaignModal-{{ campaign.campaign_id }}" tabindex="-1"
+    aria-labelledby="flagCampaignModalLabel-{{ campaign.campaign_id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="flagCampaignModalLabel-{{ campaign.campaign_id }}">Confirm Flag Campaign
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to flag the campaign "{{ campaign.name }}"?
+            </div>
+            <div class="modal-footer">
+                <form method="POST">
+                    <input type="hidden" name="_method" value="FLAG">
+                    <input type="hidden" name="campaign_id" value="{{ campaign.campaign_id }}">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">Yes, Flag</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Unflag Campaign Confirmation Modal -->
+<div class="modal fade" id="unflagCampaignModal-{{ campaign.campaign_id }}" tabindex="-1"
+    aria-labelledby="unflagCampaignModalLabel-{{ campaign.campaign_id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="unflagCampaignModalLabel-{{ campaign.campaign_id }}">Confirm Unflag Campaign
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to unflag the campaign "{{ campaign.name }}"?
+            </div>
+            <div class="modal-footer">
+                <form method="POST">
+                    <input type="hidden" name="_method" value="UNFLAG">
+                    <input type="hidden" name="campaign_id" value="{{ campaign.campaign_id }}">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Yes, Unflag</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Campaign Confirmation Modal -->
+<div class="modal fade" id="deleteCampaignModal-{{ campaign.campaign_id }}" tabindex="-1"
+    aria-labelledby="deleteCampaignModalLabel-{{ campaign.campaign_id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteCampaignModalLabel-{{ campaign.campaign_id }}">Confirm Delete Campaign
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the campaign "{{ campaign.name }}"?
+            </div>
+            <div class="modal-footer">
+                <form method="POST">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <input type="hidden" name="campaign_id" value="{{ campaign.campaign_id }}">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+</div>
+<script>
+    var chartData = JSON.parse('{{ campaign_distribution_chart | tojson | safe }}');
+    var chartData4 = JSON.parse('{{ flagged_campaign_chart | tojson | safe }}');
+    var chartData5 = JSON.parse('{{ private_campaign_chart | tojson | safe }}');    
+</script>
+{% endblock %}

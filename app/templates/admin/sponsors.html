@@ -1,0 +1,374 @@
+{% extends '/admin/dashboard_base.html' %}
+{% block title %} Sponsors {% endblock %}
+{% block nav_title %} Sponsors {% endblock %}
+{% block content %}
+<div class="main">
+    <div class="container mt-2">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <div class="section1">
+            <div class="box1 box" style="width: 230px;">
+                <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                    <img src="/static/img/sponsor.svg" alt="Sponsor" style="height: 35px; margin-right: 10px;">
+                    <div class="ml-3 flex-grow-1">
+                        {% set total_spon = sponsor_const | list | length %}
+                        <div class="money_display">{{ total_spon }}</div>
+                        <h3 class="money_type_title">Total Sponsors</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="box1 box" style="width: 230px;">
+                <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                    <img src="/static/img/flagged.png" alt="Sponsor" style="height: 35px; margin-right: 10px;">
+                    <div class="ml-3 flex-grow-1">
+                        <div class="money_display">{{sponsor_const | selectattr('flagged', 'equalto', 'True') | list |
+                            length
+                            }}</div>
+                        <h3 class="money_type_title">Flagged Sponsors</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="box1 box" style="width: 230px;">
+                <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                    <img src="/static/img/budget.png" alt="Budget" style="height: 37px; margin-right: 10px;">
+                    <div class="ml-3 flex-grow-1">
+                        {% set total_budget = sponsor_const | map(attribute='budget') | sum %}
+                        <div class="money_display">₹{{ '{:,.0f}'.format(total_budget) }}</div>
+                        <h3 class="money_type_title">Total Budget</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="box1 box" style="width: 230px;">
+                <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                    <img src="/static/img/average-earning.png" alt="Earning" style="height: 38px; margin-right: 10px;">
+                    <div class="ml-3 flex-grow-1">
+                        {% if total_spon != 0 %}
+                        <div class="money_display">₹{{ '{:,.2f}'.format(total_budget / total_spon) }}</div>
+                        {% else %}
+                        <div class="money_display">₹0</div>
+                        {% endif %}
+                        <h3 class="money_type_title">Average Budget</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="box1 box" style="width: 243px;">
+                <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                    <img src="/static/img/average.png" alt="Average" style="height: 37px; margin-right: 10px;">
+                    <div class="ml-3 flex-grow-1">
+                        {% if total_spon != 0 %}
+                        <div class="money_display">{{ '{:,.2f}'.format(campaigns | list | length / total_spon) }}</div>
+                        {% else %}
+                        <div class="money_display">₹0</div>
+                        {% endif %}
+                        <h3 class="money_type_title">Campaign/Sponsor</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3" style="width: 100%; height: 20rem;">
+            <div class="d-flex justify-content-around align-items-center" style="height: 100%;">
+                <div style="width: 39%; height: 100%;">
+                    <canvas id="sponsorChart" style="width: 100%; height: 100%;"></canvas>
+                </div>
+                <div style="width: 25%; height: 100%;">
+                    <canvas id="sponsorChartBudget" style="width: 100%; height: 100%;"></canvas>
+                </div>
+                <div style="width: 23%; height: 100%;">
+                    <canvas id="flaggedSponsor" style="width: 100%; height: 100%;"></canvas>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="card">
+            <form>
+                <div class="row align-items-center mt-3">
+                    <div class="col-auto mb-3" style="margin: 5px -10px 0px 15px;">
+                        <i class="bx bx-filter" style="font-size: 30px;"></i>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <input type="text" class="form-control" id="name" name="name" placeholder="Name"
+                            value="{{ query['name'] }}">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <select class="form-select" id="industry" name="industry">
+                            <option value="" {% if query["industry"]=="" %} selected {% endif %}>Category</option>
+                            <option value="Fashion" {% if query["industry"]=="Fashion" %} selected {% endif %}>Fashion
+                            </option>
+                            <option value="Beauty" {% if query["industry"]=="Beauty" %} selected {% endif %}>Beauty
+                            </option>
+                            <option value="Technology" {% if query["industry"]=="Technology" %} selected {% endif %}>
+                                Technology</option>
+                            <option value="Health & Fitness" {% if query["industry"]=="Health & Fitness" %} selected {%
+                                endif %}>Health & Fitness</option>
+                            <option value="Travel" {% if query["industry"]=="Travel" %} selected {% endif %}>Travel
+                            </option>
+                            <option value="Food & Beverage" {% if query["industry"]=="Food & Beverage" %} selected {%
+                                endif %}>Food & Beverage</option>
+                            <option value="Gaming" {% if query["industry"]=="Gaming" %} selected {% endif %}>Gaming
+                            </option>
+                            <option value="Sports" {% if query["industry"]=="Sports" %} selected {% endif %}>Sports
+                            </option>
+                            <option value="Entertainment" {% if query["industry"]=="Entertainment" %} selected {% endif
+                                %}>
+                                Entertainment</option>
+                            <option value="Home & Lifestyle" {% if query["industry"]=="Home & Lifestyle" %} selected {%
+                                endif %}>Home & Lifestyle</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <input type="number" class="form-control" id="budget" name="budget" placeholder="Minimum Budget"
+                            value="{{ query['budget'] }}">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <select class="form-select" id="flagged" name="flagged">
+                            <option value="" {% if query["flagged"]=="" %} selected {% endif %}>Flagging Status
+                            </option>
+                            <option value="True" {% if query["flagged"]=="True" %} selected {% endif %}>Flagged
+                            </option>
+                            <option value="False" {% if query["flagged"]=="False" %} selected {% endif %}>Non
+                                Flagged</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end mb-3">
+                        <button class="btn btn-sm force-white" style="background-color: #55acee;" type="submit"><i
+                                class="fa fa-paper-plane me-2"></i> Apply</button>
+                    </div>
+                </div>
+            </form>
+
+            {% set total_sponsor = sponsors | list | length %}
+            <h5 class="text-muted d-flex align-items-center" style="margin-left: 20px;"> {% if total_sponsor > 1 %}
+                Total Sponsors: {{ total_sponsor }} {% else %} Total Sponsor: {{total_sponsor}} {% endif %}</h5>
+
+            {% if total_sponsor == 0 %}
+            <div class="d-flex flex-column align-items-center p-4 bg-white shadow-sm rounded">
+                <img src="{{ url_for('static', filename='/img/empty.png') }}" alt="NoctiWave" height="150px">
+                <div class="text-secondary font-weight-bold mb-3 fs-5">
+                    No Sponsor Found
+                </div>
+            </div>
+            {% else %}
+
+            <div class="row">
+                {% for sponsor in sponsors %}
+                <div class="col-md-6 mb-4">
+                    <div class="card mx-auto" style="max-width: 600px; border: 1px solid #ddd; border-radius: 8px;">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                                <img src="{{ url_for('static', filename='/img/profile/' + sponsor.user.profile_picture) }}"
+                                    alt="Profile Picture" class="rounded-circle"
+                                    style="width: 50px; height: 50px; margin-right: 10px;">
+                                <div class="ml-3 flex-grow-1">
+                                    {% if sponsor.company_individual_name | length < 17 %} <h5 class="mb-0">{{
+                                        sponsor.company_individual_name }}</h5>
+                                        {% else %}
+                                        <h5 class="mb-0">{{ sponsor.company_individual_name[:14] }}..</h5>
+                                        {% endif %}
+                                        <p class="text-muted mb-0">@{{ sponsor.user.username }}</p>
+                                </div>
+                                <button class="btn" style="background-color: #00ffff; margin-right: 10px;"
+                                    data-bs-toggle="modal" data-bs-target="#viewSponsorModal-{{ sponsor.sponsor_id }}">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                {% if sponsor.flagged == 'False' %}
+                                <button class="btn btn-warning flagSponsorLink"
+                                    data-sponsor-id="{{ sponsor.sponsor_id }}" style="margin-right: 10px;">
+                                    <i class="fas fa-flag"></i> Flag
+                                </button>
+                                {% else %}
+                                <button class="btn btn-warning unflagSponsorLink"
+                                    data-sponsor-id="{{ sponsor.sponsor_id }}" style="margin-right: 10px;">
+                                    <i class="fas fa-flag"></i> Unflag
+                                </button>
+                                {% endif %}
+                                <button class="btn btn-danger deleteSponsorLink"
+                                    data-sponsor-id="{{ sponsor.sponsor_id }}">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                            <hr class="mb-1">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-4">
+                                        <h5 class="mb-0" style="font-size: 17px;">Website</h5>
+                                        <p style="color: #676767;">{{ sponsor.website }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-4">
+                                        <h5 class="mb-0" style="font-size: 17px;">Budget</h5>
+                                        <p style="color: #676767;">₹{{ '{:,.2f}'.format(sponsor.budget) }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-4">
+                                        <h5 class="mb-0" style="font-size: 17px;">Category</h5>
+                                        <p style="color: #676767;">{{ sponsor.industry }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-4">
+                                        <h5 class="mb-0" style="font-size: 17px;">Campaign</h5>
+                                        {% set active_campaign = sponsor.campaigns | selectattr('flagged', 'equalto',
+                                        'False') | list | length %}
+                                        {% set flagged_campaign = sponsor.campaigns | selectattr('flagged', 'equalto',
+                                        'True') | list | length %}
+                                        <p style="color: #676767;">Active: {{active_campaign}} | Flagged:
+                                            {{flagged_campaign}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <h5 class="mb-0" style="font-size: 17px;">Ad Requests</h5>
+                                {% set approved_ads = sponsor.ad_requests | selectattr('status', 'equalto', 'Approved')
+                                | list | length %}
+                                {% set pending_ads = sponsor.ad_requests | selectattr('status', 'equalto', 'Pending') |
+                                list | length %}
+                                {% set rejected_ads = sponsor.ad_requests | selectattr('status', 'equalto', 'Rejected')
+                                | list | length %}
+                                {% set flagged_ads = sponsor.ad_requests | selectattr('flagged', 'equalto', 'True') |
+                                list | length %}
+
+                                <p style="color: #676767;">Approved: {{approved_ads}} | Pending: {{pending_ads}} |
+                                    Rejected: {{rejected_ads}} | Flagged: {{flagged_ads}}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View Sponsor Modal -->
+                <div class="modal fade" id="viewSponsorModal-{{ sponsor.sponsor_id }}" tabindex="-1"
+                    aria-labelledby="viewSponsorModalLabel-{{ sponsor.sponsor_id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="viewSponsorModalLabel-{{ sponsor.sponsor_id }}">Sponsor
+                                    Details</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>Company/Individual Name:</strong> {{ sponsor.company_individual_name }}</p>
+                                <p><strong>Website:</strong> {{ sponsor.website }}</p>
+                                <p><strong>Flagged Status:</strong> {{ sponsor.flagged }}</p>
+                                <p><strong>Industry:</strong> {{ sponsor.industry }}</p>
+                                <p><strong>Budget:</strong> ₹{{ '{:,.2f}'.format(sponsor.budget) }}</p>
+                                <p><strong>Campaigns:</strong> Active: {{active_campaign}} | Flagged:
+                                    {{flagged_campaign}}</p>
+                                <p><strong>Ad Requests:</strong> Approved: {{approved_ads}} | Pending: {{pending_ads}} |
+                                    Rejected: {{rejected_ads}} | Flagged: {{flagged_ads}}</p>
+
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flag Sponsor Confirmation Modal -->
+                <div class="modal fade" id="flagSponsorModal-{{ sponsor.sponsor_id }}" tabindex="-1"
+                    aria-labelledby="flagSponsorModalLabel-{{ sponsor.sponsor_id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="flagSponsorModalLabel-{{ sponsor.sponsor_id }}">Confirm Flag
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to flag sponsor "{{ sponsor.company_individual_name }}"?
+                            </div>
+                            <div class="modal-footer">
+                                <form method="POST">
+                                    <input type="hidden" name="_method" value="FLAG">
+                                    <input type="hidden" name="sponsor_id" value="{{ sponsor.sponsor_id }}">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-warning">Yes, Flag</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Unflag Sponsor Confirmation Modal -->
+                <div class="modal fade" id="unflagSponsorModal-{{ sponsor.sponsor_id }}" tabindex="-1"
+                    aria-labelledby="unflagSponsorModalLabel-{{ sponsor.sponsor_id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="unflagSponsorModalLabel-{{ sponsor.sponsor_id }}">Confirm
+                                    Unflag</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to unflag sponsor "{{ sponsor.company_individual_name }}"?
+                            </div>
+                            <div class="modal-footer">
+                                <form method="POST">
+                                    <input type="hidden" name="_method" value="UNFLAG">
+                                    <input type="hidden" name="sponsor_id" value="{{ sponsor.sponsor_id }}">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-warning">Yes, Unflag</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delete Sponsor Confirmation Modal -->
+                <div class="modal fade" id="deleteSponsorModal-{{ sponsor.sponsor_id }}" tabindex="-1"
+                    aria-labelledby="deleteSponsorModalLabel-{{ sponsor.sponsor_id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteSponsorModalLabel-{{ sponsor.sponsor_id }}">Confirm
+                                    Delete</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to delete the sponsor "{{ sponsor.company_individual_name }}"?
+                            </div>
+                            <div class="modal-footer">
+                                <form method="POST">
+                                    <input type="hidden" name="_method" value="DELETE">
+                                    <input type="hidden" name="user_id" value="{{ sponsor.user.user_id }}">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                                    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<script>
+    var chartData9 = JSON.parse('{{ sponsor_distribution_chart | tojson | safe }}');
+    var chartData10 = JSON.parse('{{ flagged_sponsor_chart | tojson | safe }}');
+    var chartData11 = JSON.parse('{{ sponsor_budget_chart | tojson | safe }}')
+
+</script>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends '/admin/dashboard_base.html' %}
+{% block title %} Payments {% endblock %}
+{% block nav_title %} Payments {% endblock %}
+{% block content %}
+<div class="main">
+    <div class="container mt-2">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <div class="card">
+        {% if ad_requests | list | length < 1 %}
+        <div class="d-flex flex-column align-items-center p-4 bg-white shadow-sm rounded">
+            <img src="{{ url_for('static', filename='/img/empty.png') }}" alt="NoctiWave" height="150px">
+            <div class="text-secondary font-weight-bold mb-3 fs-5">
+                No Payments Found
+            </div>
+        </div>
+        {% else %}
+        <h3 class="text-muted mb-3 mt-2" style="margin-left: 10px;"> Payments Overview </h3>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover" id="campaignsTable">
+                <thead class="table-success">
+                    <tr>
+                        <th scope="col" class="text-center">Ad ID</th>
+                        <th scope="col" class="text-center">Campaign Name</th>
+                        <th scope="col" class="text-center">From</th>
+                        <th scope="col" class="text-center">To</th>
+                        <th scope="col" class="text-center">Payment Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ad_request in ad_requests %}
+                    <tr>
+                        <td class="text-center">{{ ad_request.ad_request_id }}</td>
+                        <td class="text-center">{{ ad_request.campaign.name }}</td>
+                        <td class="text-center">{{ ad_request.sponsor.company_individual_name }}</td>
+                        <td class="text-center">{{ ad_request.influencer.user.name }}</td>
+                        {% if ad_request.flagged == 'True' %}
+                        <td class="text-center text-danger">-₹{{ '{:,.2f}'.format(ad_request.payment_amount) }}</td>
+                        {% else %}
+                        <td class="text-center text-success">+₹{{ '{:,.2f}'.format(ad_request.payment_amount) }}</td>
+                        {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
+</div>
+{% endblock %}

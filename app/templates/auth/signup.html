@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{{ url_for('static', filename='img/fevicon.png') }}" type="image/png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{{url_for('static', filename='css/signup.css')}}">
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .background-dots {
+            position: absolute;
+            top: 0;
+            left: 60%;
+            width: 60%;
+            height: 100%;
+            background-color: #ffffff;
+            background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+
+    </style>
+    <title>NoctiWave - Signup </title>
+</head>
+
+<body>
+    <div class="background-dots"></div>
+    <nav>
+        <div class="left_nav">
+            <img src="{{url_for('static', filename='img/logo.png')}}" alt="">
+            <div class="logo_text">NoctiWave</div>
+        </div>
+        <div class="right_nav">
+            <ul class="menu_ul">
+               <a href="/"><li>Home</li></a> 
+               <a href="/login"><li>Login</li></a>
+               <a href="/signup"><li>Signup</li></a>
+            </ul>
+            <div class="menu_btn">
+                <i class='bx bx-menu-alt-right open_menu'></i>
+                <i class="ri-close-large-fill close_menu"></i>
+                
+            </div>
+        </div>
+    </nav>
+
+    <div class="main">
+        <div class="left_side">
+            <div class="form_section_box">
+                <h1>Create an Account!</h1>
+
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                    <div class="or" style="color: red;">
+                        {% for message in messages %}
+                            {{ message }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                {% endwith %}
+
+
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    {{ form.role.label(id="role") }}
+
+                    <div class="wrapper">
+                        {% for subfield in form.role %}
+                          <input type="radio" name="{{ form.role.name }}" id="option-{{ loop.index }}" value="{{ subfield.data }}" {% if subfield.checked %}checked{% endif %}>
+                          <label for="option-{{ loop.index }}" class="option option-{{ loop.index }}">
+                            <div class="dot"></div>
+                            <span>{{ subfield.label.text }}</span>
+                          </label>
+                        {% endfor %}
+                      </div>
+                    <div class="form-group">
+                        {{ form.username(id="username", placeholder=" ")}}
+                        {{ form.username.label(for="username") }}
+                        {% if form.username.errors %}
+                            <div class="text-danger">{{ form.username.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.email(id="email", placeholder=" ")}}
+                        {{ form.email.label(for="email") }}
+                        {% if form.email.errors %}
+                            <div class="text-danger">{{ form.email.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group pw_one">
+                        <div>
+                            {{ form.password(id="password", placeholder=" ") }}                            
+                            {{ form.password.label(for="password") }}
+                            {% if form.password.errors %}
+                                <div class="text-danger">{{ form.password.errors[0] }}</div>
+                            {% endif %}
+                            
+                        </div>
+                        <div class="pw_eye">
+                            <i class="ri-eye-close-line pw_eye_close"></i>
+                            <i class="ri-eye-line pw_eye_open"></i>
+                        </div>
+                    </div>
+                    <div class="form-group pw_one">
+                        <div>
+                            {{ form.confirm_password(id="confirm_password", placeholder=" ") }}                            
+                            {{ form.confirm_password.label(for="confirm_password") }}
+                            {% if form.confirm_password.errors %}
+                                <div class="text-danger">{{ form.confirm_password.errors[0] }}</div>
+                            {% endif %}
+                            
+                        </div>
+                    </div>
+                    {{ form.submit(class="submit_btn btn") }}
+                </form>
+                <div class="signup">
+                    <p>Already have an account?<a href="/login" class="signup_click"><b>Login</b></a></p>
+                </div>
+            </div>
+        </div>
+        <div class="social_media"></div>
+        <div class="right_side">
+            <img src="{{url_for('static', filename='img/home.png')}}">
+        </div>
+    </div>
+    </div>
+    </div>
+    <script src="{{url_for('static', filename='js/auth.js')}}"></script>
+</body>
+
+</html>

@@ -1,0 +1,218 @@
+{% extends '/sponsor/dashboard_base.html' %}
+{% block title %} Dashboard {% endblock %}
+{% block nav_title %} Dashboard {% endblock %}
+{% block content %}
+<div class="main">
+    <div class="container mt-2">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        <div class="section1">
+            <div class="box1 box">
+                <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                    <img src="static/img/campaign.svg" alt="Total Campaign" style="height: 40px; margin-right: 10px;">
+                    <div class="ml-3 flex-grow-1">
+                        {% set campaigns = sponsor.campaigns | selectattr('flagged', 'equalto', 'False') | list %}
+                        <div class="money_display">{{ campaigns | list | length }} </div>
+                        <h3 class="money_type_title">Total Campaign</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="box1 box">
+                <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                    <img src="static/img/ad-request.svg" alt="Total AdRequest"
+                        style="height: 40px; margin-right: 10px;">
+                    <div class="ml-3 flex-grow-1">
+                        {% set ad_requests = sponsor.ad_requests | selectattr('flagged', 'equalto', 'False') | list %}
+                        <div class="money_display">{{ ad_requests | list | length }} </div>
+                        <h3 class="money_type_title">Total AdRequest</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="box1 box">
+                <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                    <img src="static/img/negotiation.png" alt="Active Negotiation"
+                        style="height: 40px; margin-right: 10px;">
+                    <div class="ml-3 flex-grow-1">
+                        <div class="money_display">{{ negotiation }} </div>
+                        <h3 class="money_type_title">Active Negotiation</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="box1 box">
+                <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                    <img src="static/img/budget.png" alt="Total Budget" style="height: 38px; margin-right: 10px;">
+                    <div class="ml-3 flex-grow-1">
+                        <div class="money_display">₹{{ '{:,.0f}'.format(sponsor.budget) }} </div>
+                        <h3 class="money_type_title">Total Budget</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="box1 box">
+                <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                    <img src="static/img/spend.png" alt="Total Spend" style="height: 40px; margin-right: 10px;">
+                    <div class="ml-3 flex-grow-1">
+                        {% set spends = sponsor.ad_requests | selectattr('status', 'equalto', 'Approved') %}
+                        <div class="money_display">₹{{ '{:,.0f}'.format(spends | map(attribute='payment_amount') | sum)
+                            }} </div>
+                        <h3 class="money_type_title">Total Spend</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% set influencers = influencers | selectattr('flagged', 'equalto', 'False') | list %}
+        <h5 class="text-muted mb-3" style="margin-left: 10px; margin-top: -10px;"> Trending Influencers </h5>
+        <div class="row d-flex mt-1">
+            {% for influencer in influencers %}
+            <div class="col-md-4 mb-4">
+                <div class="card mx-auto" style="max-width: 600px; border: 1px solid #ddd; border-radius: 8px;">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                            <img src="{{ url_for('static', filename='/img/profile/' + influencer.user.profile_picture) }}"
+                                alt="Profile Picture" class="rounded-circle"
+                                style="width: 60px; height: 60px; margin-right: 10px;">
+                            <div class="ml-3 flex-grow-1">
+                                {% if influencer.user.name | length < 14 %} <h5 class="mb-0">{{ influencer.user.name }}
+                                    </h5>
+                                    {% else %}
+                                    <h5 class="mb-0">{{ influencer.user.name[:11] }}..</h5>
+                                    {% endif %}
+                                    <p class="text-muted mb-0">@{{ influencer.user.username }}</p>
+                            </div>
+                            <button class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#createAdRequestModal-{{ influencer.influencer_id }}">
+                                <i class="fas fa-plus-circle"></i> AdRequest
+                            </button>
+                        </div>
+                        <hr class="mb-1">
+                        <h5 class="text-capitalize" style="margin-top: 5px; color: #676767;">About
+                            {{influencer.user.username}}</h5>
+                        <p class="font-weight-bold mb-1">{{ influencer.bio }}</p>
+                        <hr class="mb-1">
+                        <div class="mb-0">
+                            <p class="mb-0" style="color: #676767;"> Category </p>
+                            <h5>{{ influencer.category }} </h5>
+                        </div>
+
+                        <p class="mb-0" style="color: #676767;"> Niches </p>
+                        {% if influencer.niche %}
+                        {% set niches = influencer.niche.split(",") %}
+                        {% for niche in niches %}
+                        <span class="nich_btn2">{{ niche }}</span>
+                        {% endfor %}
+                        {% else %}
+                        <div class="d-flex justify-content-center align-items-center">
+                            <p class="fs-5">No niches added yet. </p>
+                        </div>
+                        {% endif %}
+
+                    </div>
+                    <div class="card-footer">
+                        {% if influencer.influence %}
+                        <div class="d-grid gap-2">
+                            <div class="social-buttons">
+                                {% for platform in influencer.influence %}
+                                {% if platform.platform.lower() == 'youtube' %}
+                                <button class="btn force-white me-2 full-width" style="background-color: #ed302f;"
+                                    type="button" onclick="location.href='{{ platform.url }}';">
+                                    <i class="fab fa-youtube me-2"></i>{{ converter(platform.reach) }}
+                                </button>
+                                {% elif platform.platform.lower() == 'instagram' %}
+                                <button class="btn force-white me-2 full-width" style="background-color: #ac2bac;"
+                                    type="button" onclick="location.href='{{ platform.url }}';">
+                                    <i class="fab fa-instagram me-2"></i>{{ converter(platform.reach) }}
+                                </button>
+                                {% elif platform.platform.lower() == 'facebook' %}
+                                <button class="btn force-white me-2 full-width" style="background-color: #3b5998;"
+                                    type="button" onclick="location.href='{{ platform.url }}';">
+                                    <i class="fab fa-facebook me-2"></i>{{ converter(platform.reach)}}
+                                </button>
+                                {% elif platform.platform.lower() == 'twitter' %}
+                                <button class="btn force-white me-2 full-width" style="background-color: #55acee;"
+                                    type="button" onclick="location.href='{{ platform.url }}';">
+                                    <i class="fab fa-twitter me-2"></i>{{ converter(platform.reach) }}
+                                </button>
+                                {% elif platform.platform.lower() == 'linkedin' %}
+                                <button class="btn force-white me-2 full-width" style="background-color: #0082ca;"
+                                    type="button" onclick="location.href='{{ platform.url }}';">
+                                    <i class="fab fa-linkedin me-2"></i>{{ converter(platform.reach) }}
+                                </button>
+                                {% else %}
+                                <button class="btn force-white me-2 full-width" style="background-color: #25d366;"
+                                    type="button" onclick="location.href='{{ platform.url }}';">
+                                    <i class="fa fa-globe me-2"></i>{{ converter(platform.reach) }}
+                                </button>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Create Ad Request Modals for each influencer -->
+            <div class="modal fade" id="createAdRequestModal-{{ influencer.influencer_id }}" tabindex="-1"
+                aria-labelledby="createAdRequestModalLabel-{{ influencer.influencer_id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="createAdRequestModalLabel-{{ influencer.influencer_id }}">Create
+                                Ad Request</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="createAdRequestForm-{{ influencer.influencer_id }}" method="POST">
+                                <input type="hidden" name="_method" value="POST">
+                                <input type="hidden" name="influencer_id" value="{{influencer.influencer_id}}">
+                                <div class="mb-3">
+                                    <label for="campaign_id-{{ influencer.influencer_id }}" class="form-label">Campaign
+                                        Name</label>
+                                    <select class="form-select" id="campaign_id-{{ influencer.influencer_id }}"
+                                        name="campaign_id" required>
+                                        {% for campaign_option in campaigns %}
+                                        <option value="{{ campaign_option.campaign_id }}" {% if
+                                            campaign_option==campaign %} selected {% endif %}>{{ campaign_option.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="requirements" class="form-label">Requirements</label>
+                                    <textarea class="form-control" id="requirements-{{ influencer.influencer_id }}"
+                                        name="requirements" rows="3" required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="payment_amount" class="form-label">Payment Amount</label>
+                                    <input type="number" step="0.01" class="form-control"
+                                        id="payment_amount-{{ influencer.influencer_id }}" name="payment_amount"
+                                        required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="messages" class="form-label">Messages</label>
+                                    <input type="text" class="form-control" id="messages-{{ influencer.influencer_id }}"
+                                        name="messages" required>
+                                </div>
+                                <button type="submit" class="btn btn-success">Create Ad Request</button>
+                                <button type="button" class="btn btn-secondary ms-2"
+                                    data-bs-dismiss="modal">Cancel</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{{ url_for('static', filename='img/fevicon.png') }}" type="image/png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{{url_for('static', filename='css/login.css')}}">
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .background-dots {
+            position: absolute;
+            top: 0;
+            left: 60%;
+            width: 60%;
+            height: 100%;
+            background-color: #ffffff;
+            background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+
+    </style>
+    <title>NoctiWave - Login </title>
+</head>
+
+<body>
+    <div class="background-dots"></div>
+    <nav>
+        <div class="left_nav">
+            <img src="{{url_for('static', filename='img/logo.png')}}" alt="">
+            <div class="logo_text">NoctiWave</div>
+        </div>
+        <div class="right_nav">
+            <ul class="menu_ul">
+                <a href="/"><li>Home</li></a> 
+                <a href="/login"><li>Login</li></a>
+                <a href="/signup"><li>Signup</li></a>
+             </ul>
+            <div class="menu_btn">
+                <i class='bx bx-menu-alt-right open_menu'></i>
+                <i class="ri-close-large-fill close_menu"></i>
+                
+            </div>
+        </div>
+    </nav>
+
+
+
+
+
+    <div class="main">
+        <div class="left_side">
+            <div class="form_section_box">
+                <div class="or"></div>
+                <div class="or"></div>
+                <h1>Welcome Back!</h1>
+                <div class="or">Login to Continue</div>
+
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                    <div class="text-danger">
+                        {% for message in messages %}
+                            {{ message }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                {% endwith %}
+
+
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ form.user_mail(id="username", placeholder=" ")}}
+                        {{ form.user_mail.label(for="username") }}
+                    </div>
+                    <div class="form-group pw_one">
+                        <div>
+                            {{ form.password(id="password", placeholder=" ") }}                            
+                            {{ form.password.label(for="password") }}
+                            
+                        </div>
+                        <div class="pw_eye">
+                            <i class="ri-eye-close-line pw_eye_close"></i>
+                            <i class="ri-eye-line pw_eye_open"></i>
+                        </div>
+                    </div>
+                    <div class="remember_forget">
+                        <div class="remember">
+                            {{ form.remember(id="remember", type="radio")}}
+                            {{ form.remember.label(for="remember") }}
+                        </div>
+                    </div>
+                    {{ form.submit(class="submit_btn btn") }}
+                </form>
+                <div class="signup">
+                    <p>Don't have an account?<a href="/signup" class="signup_click"><b>Signup</b></a></p>
+                </div>
+            </div>
+        </div>
+        <div class="social_media"></div>
+        <div class="right_side">
+            <img src="{{url_for('static', filename='img/home.png')}}">
+        </div>
+    </div>
+    </div>
+    </div>
+    <script src="{{url_for('static', filename='js/auth.js')}}"></script>
+</body>
+
+</html>

@@ -1,0 +1,428 @@
+{% extends '/admin/dashboard_base.html' %}
+{% block title %} Influencers {% endblock %}
+{% block nav_title %} Influencers {% endblock %}
+{% block content %}
+<div class="main">
+    <div class="container mt-2">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <div class="section1">
+            <div class="box1 box" style="width: 230px;">
+                <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                    <img src="/static/img/influencer.svg" alt="Influencers" style="height: 35px; margin-right: 10px;">
+                    <div class="ml-3 flex-grow-1">
+                        {% set total_influencer = cards | list | length %}
+                        <div class="money_display">{{ total_influencer }}</div>
+                        <h3 class="money_type_title">Total Influencers</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="box1 box" style="width: 230px;">
+                <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                    <img src="/static/img/flagged.png" alt="Influencers" style="height: 35px; margin-right: 10px;">
+                    <div class="ml-3 flex-grow-1">
+                        <div class="money_display">{{cards | selectattr('flagged', 'equalto', 'True') | list | length }}
+                        </div>
+                        <h3 class="money_type_title">Flagged Influencers</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="box1 box" style="width: 230px;">
+                <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                    <img src="/static/img/budget.png" alt="Earning" style="height: 37px; margin-right: 10px;">
+                    <div class="ml-3 flex-grow-1">
+                        {% set approved_ads = ad_requests | selectattr('status', 'equalto', 'Approved') | list %}
+                        {% set total_earning = approved_ads | map(attribute='payment_amount') | sum %}
+                        <div class="money_display">₹{{ '{:,.0f}'.format(total_earning) }}</div>
+                        <h3 class="money_type_title">Total Earning</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="box1 box" style="width: 230px;">
+                <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                    <img src="/static/img/average-earning.png" alt="Earning" style="height: 38px; margin-right: 10px;">
+                    <div class="ml-3 flex-grow-1">
+                        {% if total_influencer !=0 %}
+                        <div class="money_display">₹{{ '{:,.2f}'.format(total_earning / total_influencer) }}</div>
+                        {% else %}
+                        <div class="money_display">₹0</div>
+                        {% endif %}
+                        <h3 class="money_type_title">Average Earning</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="box1 box" style="width: 243px;">
+                <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                    <img src="/static/img/average.png" alt="Average" style="height: 37px; margin-right: 10px;">
+                    <div class="ml-3 flex-grow-1">
+                        {% if total_influencer != 0 %}
+                        <div class="money_display">{{'{:,.2f}'.format(approved_ads | list | length / total_influencer)}} </div>
+                        {% else %}
+                        <div class="money_display">₹0</div>
+                        {% endif %}
+                        <h3 class="money_type_title">Average Ads</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3" style="width: 100%; height: 20rem;">
+            <div class="d-flex justify-content-around align-items-center" style="height: 100%;">
+                <div style="width: 39.5%; height: 100%;">
+                    <canvas id="influencerChart" style="width: 100%; height: 100%;"></canvas>
+                </div>
+                <div style="width: 25%; height: 100%;">
+                    <canvas id="influencerPlatform" style="width: 100%; height: 100%;"></canvas>
+                </div>
+                <div style="width: 24.5%; height: 100%;">
+                    <canvas id="flaggedInfluencer" style="width: 100%; height: 100%;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="container">
+                <form>
+                    <div class="row align-items-center mt-3">
+                        <div class="col-auto mb-3" style="margin: 5px -10px 0px 15px;">
+                            <i class="bx bx-filter" style="font-size: 30px;"></i>
+                        </div>
+                        <div class="col mb-3" style="width: 12%;">
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Name"
+                                value="{{ query['name'] }}">
+                        </div>
+                        <div class="col mb-3" style="width: 15%;">
+                            <select class="form-select" id="category" name="category">
+                                <option value="" {% if query["category"]=="" %} selected {% endif %}>Category</option>
+                                <option value="Fashion" {% if query["category"]=="Fashion" %} selected {% endif %}>
+                                    Fashion</option>
+                                <option value="Beauty" {% if query["category"]=="Beauty" %} selected {% endif %}>Beauty
+                                </option>
+                                <option value="Technology" {% if query["category"]=="Technology" %} selected {% endif
+                                    %}>Technology</option>
+                                <option value="Health & Fitness" {% if query["category"]=="Health & Fitness" %} selected
+                                    {% endif %}>Health & Fitness</option>
+                                <option value="Travel" {% if query["category"]=="Travel" %} selected {% endif %}>Travel
+                                </option>
+                                <option value="Food & Beverage" {% if query["category"]=="Food & Beverage" %} selected
+                                    {% endif %}>Food & Beverage</option>
+                                <option value="Gaming" {% if query["category"]=="Gaming" %} selected {% endif %}>Gaming
+                                </option>
+                                <option value="Sports" {% if query["category"]=="Sports" %} selected {% endif %}>Sports
+                                </option>
+                                <option value="Entertainment" {% if query["category"]=="Entertainment" %} selected {%
+                                    endif %}>Entertainment</option>
+                                <option value="Home & Lifestyle" {% if query["category"]=="Home & Lifestyle" %} selected
+                                    {% endif %}>Home & Lifestyle</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <select class="form-select" id="platform" name="platform">
+                                <option value="" {% if query["platform"]=="" %} selected {% endif %}>Platform</option>
+                                <option value="Instagram" {% if query["platform"]=="Instagram" %} selected {% endif %}>
+                                    Instagram</option>
+                                <option value="YouTube" {% if query["platform"]=="YouTube" %} selected {% endif %}>
+                                    YouTube</option>
+                                <option value="Facebook" {% if query["platform"]=="Facebook" %} selected {% endif %}>
+                                    Facebook</option>
+                                <option value="Twitter" {% if query["platform"]=="Twitter" %} selected {% endif %}>
+                                    Twitter</option>
+                                <option value="LinkedIn" {% if query["platform"]=="LinkedIn" %} selected {% endif %}>
+                                    LinkedIn</option>
+                                <option value="Other" {% if query["platform"]=="Other" %} selected {% endif %}>Other
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <select class="form-select" id="reach" name="reach">
+                                <option value=0 {% if query["reach"]=="0" %} selected {% endif %}>Minimum Reach</option>
+                                <option value=100000 {% if query["reach"]=="100000" %} selected {% endif %}>100K
+                                </option>
+                                <option value=500000 {% if query["reach"]=="500000" %} selected {% endif %}>500K
+                                </option>
+                                <option value=1000000 {% if query["reach"]=="1000000" %} selected {% endif %}>1M
+                                </option>
+                                <option value=5000000 {% if query["reach"]=="5000000" %} selected {% endif %}>5M
+                                </option>
+                                <option value=10000000 {% if query["reach"]=="10000000" %} selected {% endif %}>10M
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <select class="form-select" id="flagged" name="flagged">
+                                <option value="" {% if query["flagged"]=="" %} selected {% endif %}>Flagging Status
+                                </option>
+                                <option value="True" {% if query["flagged"]=="True" %} selected {% endif %}>Flagged
+                                </option>
+                                <option value="False" {% if query["flagged"]=="False" %} selected {% endif %}>Non
+                                    Flagged</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end mb-3">
+                            <button class="btn btn-sm force-white" style="background-color: #55acee;" type="submit"><i
+                                    class="fa fa-paper-plane me-2"></i> Apply</button>
+                        </div>
+                    </div>
+                </form>
+                
+                {% set total_influencer = influencers | list | length %}
+                <h5 class="text-muted d-flex align-items-center" style="margin-left: 20px;"> {% if total_influencer > 1
+                    %} Total Influencers: {{ total_influencer }} {% else %} Total Influencer: {{total_influencer}} {%
+                    endif %}</h5>
+                
+                {% if total_influencer == 0 %}
+                <div class="d-flex flex-column align-items-center p-4 bg-white shadow-sm rounded">
+                    <img src="{{ url_for('static', filename='/img/empty.png') }}" alt="NoctiWave" height="150px">
+                    <div class="text-secondary font-weight-bold mb-3 fs-5">
+                        No Influencer Found
+                    </div>
+                </div>
+                {% else %}
+                <div class="row">
+                    {% for influencer in influencers %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card mx-auto" style="max-width: 600px; border: 1px solid #ddd; border-radius: 8px;">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center" style="margin-bottom: 0%;">
+                                    <img src="{{ url_for('static', filename='/img/profile/' + influencer.profile_picture) }}"
+                                        alt="Profile Picture" class="rounded-circle"
+                                        style="width: 60px; height: 60px; margin-right: 10px;">
+                                    <div class="ml-3 flex-grow-1">
+                                        {% if influencer.name | length < 17 %} <h5 class="mb-0">{{ influencer.name }}
+                                            </h5>
+                                            {% else %}
+                                            <h5 class="mb-0">{{ influencer.name[:14] }}..</h5>
+                                            {% endif %}
+                                            <p class="text-muted mb-0">@{{ influencer.username }}</p>
+                                    </div>
+                                    <button class="btn" style="background-color: #00ffff; margin-right: 10px;"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#viewInfluencerModal-{{ influencer.influencer_id }}">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                    {% if influencer.flagged == 'False' %}
+                                    <button class="btn btn-warning flagInfluencerLink"
+                                        data-influencer-id="{{ influencer.influencer_id }}" style="margin-right: 10px;">
+                                        <i class="fas fa-flag"></i> Flag
+                                    </button>
+                                    {% else %}
+                                    <button class="btn btn-warning unflagInfluencerLink"
+                                        data-influencer-id="{{ influencer.influencer_id }}" style="margin-right: 10px;">
+                                        <i class="fas fa-flag"></i> Unflag
+                                    </button>
+                                    {% endif %}
+                                    <button class="btn btn-danger deleteInfluencerLink"
+                                        data-influencer-id="{{ influencer.influencer_id }}">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </div>
+                                <hr class="mb-1">
+                                <h5 class="text-capitalize" style="margin-top: 5px; color: #676767;">About
+                                    {{influencer.username}}</h5>
+                                <p class="font-weight-bold mb-1">{{ influencer.bio }}</p>
+                                <hr class="mb-1">
+                                <div class="mb-0">
+                                    <p class="mb-0" style="color: #676767;"> Category </p>
+                                    <h5>{{ influencer.category }} </h5>
+                                </div>
+
+                                <p class="mb-0" style="color: #676767;"> Niches </p>
+                                {% if influencer.niche %}
+                                {% set niches = influencer.niche.split(",") %}
+                                {% for niche in niches %}
+                                <span class="nich_btn2">{{ niche }}</span>
+                                {% endfor %}
+                                {% else %}
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <p class="fs-5">No niches added yet. </p>
+                                </div>
+                                {% endif %}
+
+                            </div>
+                            <div class="card-footer">
+                                {% if influencer.platforms %}
+                                <div class="d-grid gap-2">
+                                    <div class="social-buttons">
+                                        {% for platform in influencer.platforms %}
+                                        {% if platform.platform.lower() == 'youtube' %}
+                                        <button class="btn force-white me-2 full-width"
+                                            style="background-color: #ed302f;" type="button"
+                                            onclick="location.href='{{ platform.url }}';">
+                                            <i class="fab fa-youtube me-2"></i>{{ converter(platform.reach) }}
+                                        </button>
+                                        {% elif platform.platform.lower() == 'instagram' %}
+                                        <button class="btn force-white me-2 full-width"
+                                            style="background-color: #ac2bac;" type="button"
+                                            onclick="location.href='{{ platform.url }}';">
+                                            <i class="fab fa-instagram me-2"></i>{{ converter(platform.reach) }}
+                                        </button>
+                                        {% elif platform.platform.lower() == 'facebook' %}
+                                        <button class="btn force-white me-2 full-width"
+                                            style="background-color: #3b5998;" type="button"
+                                            onclick="location.href='{{ platform.url }}';">
+                                            <i class="fab fa-facebook me-2"></i>{{ converter(platform.reach)}}
+                                        </button>
+                                        {% elif platform.platform.lower() == 'twitter' %}
+                                        <button class="btn force-white me-2 full-width"
+                                            style="background-color: #55acee;" type="button"
+                                            onclick="location.href='{{ platform.url }}';">
+                                            <i class="fab fa-twitter me-2"></i>{{ converter(platform.reach) }}
+                                        </button>
+                                        {% elif platform.platform.lower() == 'linkedin' %}
+                                        <button class="btn force-white me-2 full-width"
+                                            style="background-color: #0082ca;" type="button"
+                                            onclick="location.href='{{ platform.url }}';">
+                                            <i class="fab fa-linkedin me-2"></i>{{ converter(platform.reach) }}
+                                        </button>
+                                        {% else %}
+                                        <button class="btn force-white me-2 full-width"
+                                            style="background-color: #25d366;" type="button"
+                                            onclick="location.href='{{ platform.url }}';">
+                                            <i class="fa fa-globe me-2"></i>{{ converter(platform.reach) }}
+                                        </button>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- View Influencer Modal -->
+                    <div class="modal fade" id="viewInfluencerModal-{{ influencer.influencer_id }}" tabindex="-1"
+                        aria-labelledby="viewInfluencerModalLabel-{{ influencer.influencer_id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"
+                                        id="viewInfluencerModalLabel-{{ influencer.influencer_id }}">Influencer Details
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p><strong>Influencer Name:</strong> {{ influencer.name }}</p>
+                                    <p><strong>Email:</strong> {{ influencer.email }}</p>
+                                    <p><strong>Username:</strong> {{ influencer.username }}</p>
+                                    <p><strong>Flagged Status:</strong> {{ influencer.flagged }}</p>
+                                    <p><strong>Category:</strong> {{ influencer.category }}</p>
+                                    <p><strong>Niches:</strong> {{ influencer.niche }}</p>
+                                    <p><strong>Bio:</strong> {{ influencer.bio }}</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Flag Influencer Confirmation Modal -->
+                    <div class="modal fade" id="flagInfluencerModal-{{ influencer.influencer_id }}" tabindex="-1"
+                        aria-labelledby="flagInfluencerModalLabel-{{ influencer.influencer_id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"
+                                        id="flagInfluencerModalLabel-{{ influencer.influencer_id }}">Confirm Flag</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to flag influencer "{{ influencer.name }}"?
+                                </div>
+                                <div class="modal-footer">
+                                    <form method="POST">
+                                        <input type="hidden" name="_method" value="FLAG">
+                                        <input type="hidden" name="influencer_id"
+                                            value="{{ influencer.influencer_id }}">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-warning">Yes, Flag</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Unflag Influencer Confirmation Modal -->
+                    <div class="modal fade" id="unflagInfluencerModal-{{ influencer.influencer_id }}" tabindex="-1"
+                        aria-labelledby="unflagInfluencerModalLabel-{{ influencer.influencer_id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"
+                                        id="unflagInfluencerModalLabel-{{ influencer.influencer_id }}">Confirm Unflag
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to unflag influencer "{{ influencer.name }}"?
+                                </div>
+                                <div class="modal-footer">
+                                    <form method="POST">
+                                        <input type="hidden" name="_method" value="UNFLAG">
+                                        <input type="hidden" name="influencer_id"
+                                            value="{{ influencer.influencer_id }}">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-warning">Yes, Unflag</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Delete Influencer Confirmation Modal -->
+                    <div class="modal fade" id="deleteInfluencerModal-{{ influencer.influencer_id }}" tabindex="-1"
+                        aria-labelledby="deleteInfluencerModalLabel-{{ influencer.influencer_id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"
+                                        id="deleteInfluencerModalLabel-{{ influencer.influencer_id }}">Confirm Delete
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to delete the influencer "{{ influencer.name }}"?
+                                </div>
+                                <div class="modal-footer">
+                                    <form method="POST">
+                                        <input type="hidden" name="_method" value="DELETE">
+                                        <input type="hidden" name="user_id" value="{{ influencer.user_id }}">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">No</button>
+                                        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<script>
+    var chartData6 = JSON.parse('{{ influencer_distribution_chart | tojson | safe }}');
+    var chartData7 = JSON.parse('{{ flagged_influencer_chart | tojson | safe }}');
+    var chartData8 = JSON.parse('{{ influencer_platform_chart | tojson | safe }}');
+</script>
+{% endblock %}
