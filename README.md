@@ -1,6 +1,9 @@
 # NoctiWave - A Platfrom for Influencer and Sponsor
 A web application that enables sponsors to create and manage campaigns, and allows both sponsors and influencers to send, negotiate, and manage ad requests.
 
+## Preview
+[![Watch the video](thumbnail.png)](https://drive.google.com/file/d/1Pltm3ym-F4tpNf3RlVb6R80ouYoCI-Ez/view?usp=drive_link)
+
 ## Installation
 
 ### Clone the Repository
