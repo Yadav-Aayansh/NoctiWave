@@ -32,26 +32,25 @@ python run.py
 
 ## 💻 Built with
 
-### Backend Technologies
-- **[Flask](https://flask.palletsprojects.com/)**: A lightweight Python web framework.
-- **[Jinja2](https://jinja.palletsprojects.com/)**: A templating engine for generating HTML.
-- **[Flask_SQLAlchemy](https://flask-sqlalchemy.palletsprojects.com/)**: Adds SQLAlchemy support for database management in Flask.
-- **[Flask_Bcrypt](https://flask-bcrypt.readthedocs.io/)**: Provides bcrypt hashing for secure passwords.
-- **[Flask_RESTful](https://flask-restful.readthedocs.io/)**: Simplifies building REST APIs in Flask.
-- **[Flask_WTF](https://flask-wtf.readthedocs.io/)**: Integrates Flask with WTForms for form handling.
-- **[Requests](https://docs.python-requests.org/en/master/)**: A library for making HTTP requests in Python.
-- **[Email-Validators](https://pypi.org/project/email-validator/)**: Validates email addresses for correctness.
+### Backend
+- *Flask*: A web framework.
+- *Jinja2*: For rendering templates.
+- *Flask_SQLAlchemy*: Manages database operations.
+- *Flask_Bcrypt*: Secures passwords with hashing.
+- *Flask_RESTful*: Simplifies creating REST APIs.
+- *Flask_WTF*: Handles forms easily.
+- *Requests*: For making HTTP requests.
+- *Email-Validators*: Ensures email validity.
 
 ### Database
-- **[SQLite](https://www.sqlite.org/index.html)**: A lightweight, disk-based database.
+- *SQLite*: A lightweight database.
 
-### Frontend Technologies
-- **[HTML](https://developer.mozilla.org/en-US/docs/Web/HTML)**: Markup language for creating web pages.
-- **[CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)**: Stylesheet language for designing web pages.
-- **[JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)**: Programming language for interactive web content.
-- **[Bootstrap](https://getbootstrap.com/)**: Framework for responsive, mobile-first web design.
-- **[ChartJS](https://www.chartjs.org/)**: Library for creating interactive charts.
-
+### Frontend
+- *HTML*: For structuring web pages.
+- *CSS*: Styles web pages.
+- *JavaScript*: Adds interactivity.
+- *Bootstrap*: For responsive and mobile-first design.
+- *ChartJS*: Visualizes data through charts.
 
 
 
