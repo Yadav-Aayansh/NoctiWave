@@ -54,9 +54,9 @@ python run.py
 🌟 You are all set!
 
 <hr>
-<p align="center">
+<h3 align="center">
 Thank You ❤️
-</p>
+</h3>
 
 
 
