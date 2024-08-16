@@ -68,9 +68,3 @@ python run.py
 <h3 align="center">
 Thank You ❤️
 </h3>
-
-
-
-
-
-
