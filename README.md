@@ -3,25 +3,28 @@ A web application that enables sponsors to create and manage campaigns, and allo
 
 ## Preview
 [![Watch the video](https://github.com/user-attachments/assets/38992706-0847-4c33-93f5-81b35e9cf035)](https://youtu.be/xLdG8g9IQvo?si=rSfJVEzqH15C0fOR)
-## Installation
+## ⚙️ Installation Steps
 
-### Clone the Repository
+### 1. Clone the Repository
 ```bash
 git clone https://github.com/Yadav-Aayansh/NoctiWave.git
+```
+### 2. Change the working directory
+```bash
 cd NoctiWave
 ```
 
-### Create a Virtual Environment
+### 3. Create a Virtual Environment
 ```bash
 python -m venv env
 ```
 
-### Install Required Package Dependencies
+### 4. Install Required Package Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### Run the App
+### 5. Run the App
 ```bash
 python run.py
 ```
