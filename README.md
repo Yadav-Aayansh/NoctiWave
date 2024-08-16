@@ -52,7 +52,7 @@ pip install -r requirements.txt
 python run.py
 ```
 🌟 You are all set!
-
+<hr>
 
 ## 📸 Screenshots
 ![Admin Dashboard](https://github.com/user-attachments/assets/a15c6960-b2fc-47ee-b955-8bd140becf6d)
