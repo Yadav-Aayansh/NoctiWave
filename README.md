@@ -53,6 +53,7 @@ python run.py
 ```
 🌟 You are all set!
 
+<hr>
 <p align="center">
 Thank You ❤️
 </p>
