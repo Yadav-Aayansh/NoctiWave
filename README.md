@@ -2,7 +2,7 @@
 A web application that enables sponsors to create and manage campaigns, and allows both sponsors and influencers to send, negotiate, and manage ad requests.
 
 ## Preview
-[![Watch the video](https://github.com/user-attachments/assets/e3159078-ce34-46e4-91a4-62f52c050325)](https://youtu.be/xLdG8g9IQvo?si=rSfJVEzqH15C0fOR)
+[![Watch the video](https://github.com/user-attachments/assets/38992706-0847-4c33-93f5-81b35e9cf035)](https://youtu.be/xLdG8g9IQvo?si=rSfJVEzqH15C0fOR)
 ## Installation
 
 ### Clone the Repository
