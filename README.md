@@ -53,6 +53,8 @@ python run.py
 ```
 🌟 You are all set!
 
+
+## 📸 Screenshots
 ![Admin Dashboard](https://github.com/user-attachments/assets/a15c6960-b2fc-47ee-b955-8bd140becf6d)
 ![Admin Dashboard](https://github.com/user-attachments/assets/21741f0c-46c6-4e6e-b8bb-8a74408aed1f)
 ![Admin Dashboard](https://github.com/user-attachments/assets/a498c27b-9a01-4861-8d19-7cdf1a3a9339)
