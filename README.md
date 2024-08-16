@@ -29,3 +29,19 @@ pip install -r requirements.txt
 python run.py
 ```
 🌟 You are all set!
+
+## 💻 Built with
+
+- [Flask]
+- [Bootstrap]: for styling
+- [GSAP](https://greensock.com/gsap/): for small SVG Animations
+
+
+
+
+
+
+
+
+
+
