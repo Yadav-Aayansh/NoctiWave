@@ -3,6 +3,29 @@ A web application that enables sponsors to create and manage campaigns, and allo
 
 ## Preview
 [![Watch the video](https://github.com/user-attachments/assets/38992706-0847-4c33-93f5-81b35e9cf035)](https://youtu.be/xLdG8g9IQvo?si=rSfJVEzqH15C0fOR)
+
+## 💻 Built with
+
+### Backend
+- **Flask**: A web framework.
+- **Jinja2**: For rendering templates.
+- **Flask_SQLAlchemy**: Manages database operations.
+- **Flask_Bcrypt**: Secures passwords with hashing.
+- **Flask_RESTful**: Simplifies creating REST APIs.
+- **Flask_WTF**: Handles forms easily.
+- **Requests**: For making HTTP requests.
+- **Email-Validators**: Ensures email validity.
+
+### Database
+- **SQLite**: A lightweight database.
+
+### Frontend
+- **HTML**: For structuring web pages.
+- **CSS**: Styles web pages.
+- **JavaScript**: Adds interactivity.
+- **Bootstrap**: For responsive and mobile-first design.
+- **ChartJS**: Visualizes data through charts.
+
 ## ⚙️ Installation Steps
 
 ### 1. Clone the Repository
@@ -29,29 +52,6 @@ pip install -r requirements.txt
 python run.py
 ```
 🌟 You are all set!
-
-## 💻 Built with
-
-### Backend
-- **Flask**: A web framework.
-- **Jinja2**: For rendering templates.
-- **Flask_SQLAlchemy**: Manages database operations.
-- **Flask_Bcrypt**: Secures passwords with hashing.
-- **Flask_RESTful**: Simplifies creating REST APIs.
-- **Flask_WTF**: Handles forms easily.
-- **Requests**: For making HTTP requests.
-- **Email-Validators**: Ensures email validity.
-
-### Database
-- **SQLite**: A lightweight database.
-
-### Frontend
-- **HTML**: For structuring web pages.
-- **CSS**: Styles web pages.
-- **JavaScript**: Adds interactivity.
-- **Bootstrap**: For responsive and mobile-first design.
-- **ChartJS**: Visualizes data through charts.
-
 
 
 
