@@ -4,6 +4,9 @@ A web application that enables sponsors to create and manage campaigns, and allo
 ## 🚀 Preview
 [![Watch the video](https://github.com/user-attachments/assets/38992706-0847-4c33-93f5-81b35e9cf035)](https://youtu.be/xLdG8g9IQvo?si=rSfJVEzqH15C0fOR)
 
+Demo URL of NoctiWave:
+https://noctiwave.vercel.app/
+
 ## 💻 Built with
 
 ### Backend
