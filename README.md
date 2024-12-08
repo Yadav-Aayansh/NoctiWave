@@ -43,9 +43,22 @@ git clone https://github.com/Yadav-Aayansh/NoctiWave.git
 cd NoctiWave
 ```
 
-### 3. Create a Virtual Environment
+### 3. Create & Activate Virtual Environment
+- #### Create Virtual Environment
+  
 ```bash
-python -m venv env
+cd server
+python -m venv venv
+```
+
+- #### Activate Virtual Environment
+For Linux/macOS:
+```
+source venv/bin/activate
+```
+For Windows:
+```
+venv\\Scripts\\activate
 ```
 
 ### 4. Install Required Package Dependencies
